@@ -1,11 +1,11 @@
-// import { createAdminClient } from "./supabase"
-import { supabase } from "./supabase"
+'use server'
+
+import { createServerClient } from "@/lib/supabase-server"
 
 // Customer Profile Functions
 export async function getCustomerProfile(userId: string) {
+  const supabase = createServerClient()
   try {
-    // const supabase = createAdminClient()
-
     const { data, error } = await supabase.from("customers").select("*").eq("id", userId).single()
 
     if (error) {
@@ -26,8 +26,11 @@ export async function updateCustomerProfile(
     sex: string
     phone: string
     location: string
+    latitude: number | null
+    longitude: number | null
   },
 ) {
+  const supabase = createServerClient()
   try {
     // Basic validation
     if (!profileData.name || profileData.name.trim() === "") {
@@ -58,6 +61,8 @@ export async function updateCustomerProfile(
         sex: profileData.sex,
         phone: profileData.phone,
         location: profileData.location,
+        latitude: profileData.latitude,
+        longitude: profileData.longitude,
         updated_at: new Date().toISOString(),
       })
       .eq("id", userId)
@@ -74,9 +79,8 @@ export async function updateCustomerProfile(
 
 // Shop Owner Profile Functions
 export async function getShopOwnerProfile(userId: string) {
+  const supabase = createServerClient()
   try {
-    // const supabase = createAdminClient()
-
     const { data, error } = await supabase
       .from("shop_owners")
       .select(`
@@ -108,10 +112,13 @@ export async function updateShopOwnerProfile(
     shopEmail: string
     shopPhone: string
     shopAddress: string
+    shopLatitude: number | null
+    shopLongitude: number | null
     openingTime: string
     closingTime: string
   },
 ) {
+  const supabase = createServerClient()
   try {
     // Basic validation
     if (!profileData.ownerName || profileData.ownerName.trim() === "") {
@@ -151,8 +158,6 @@ export async function updateShopOwnerProfile(
       return { error: "Invalid closing time format (HH:MM)." }
     }
 
-    // const supabase = createAdminClient()
-
     // Update shop owner info
     const { error: updateOwnerError } = await supabase
       .from("shop_owners")
@@ -178,6 +183,8 @@ export async function updateShopOwnerProfile(
         address: profileData.shopAddress,
         opening_time: profileData.openingTime,
         closing_time: profileData.closingTime,
+        shop_latitude: profileData.shopLatitude,
+        shop_longitude: profileData.shopLongitude,
         updated_at: new Date().toISOString(),
       })
       .eq("id", shopId)
@@ -200,9 +207,8 @@ export async function updateShopStatus(
     closing_time: string
   },
 ) {
+  const supabase = createServerClient()
   try {
-    // const supabase = createAdminClient()
-
     const { error } = await supabase
       .from("shops")
       .update({
@@ -234,10 +240,13 @@ export async function createShopOwnerProfile(
     shopEmail: string
     shopPhone: string
     shopAddress: string
+    shopLatitude: number | null
+    shopLongitude: number | null
     openingTime: string
     closingTime: string
   },
 ) {
+  const supabase = createServerClient()
   try {
     // Basic validation
     if (!profileData.ownerName || profileData.ownerName.trim() === "") {
@@ -292,6 +301,8 @@ export async function createShopOwnerProfile(
         shop_email: profileData.shopEmail,
         shop_phone: profileData.shopPhone,
         shop_address: profileData.shopAddress,
+        shop_latitude: profileData.shopLatitude,
+        shop_longitude: profileData.shopLongitude,
         opening_time: profileData.openingTime,
         closing_time: profileData.closingTime,
     });
@@ -315,6 +326,7 @@ export async function addService(
     description: string
   },
 ) {
+  const supabase = createServerClient()
   try {
     const { error } = await supabase.from("services").insert({
       shop_id: shopId,
@@ -341,6 +353,7 @@ export async function addBarber(
     specialties: string[]
   },
 ) {
+  const supabase = createServerClient()
   try {
     const { error } = await supabase.from("barbers").insert({
       shop_id: shopId,
@@ -358,6 +371,7 @@ export async function addBarber(
 }
 
 export async function deleteService(serviceId: number) {
+  const supabase = createServerClient()
   try {
     const { error } = await supabase.from("services").delete().eq("id", serviceId)
 
@@ -372,6 +386,7 @@ export async function deleteService(serviceId: number) {
 }
 
 export async function deleteBarber(barberId: number) {
+  const supabase = createServerClient()
   try {
     const { error } = await supabase.from("barbers").delete().eq("id", barberId)
 
@@ -394,6 +409,7 @@ export async function updateService(
     description: string
   },
 ) {
+  const supabase = createServerClient()
   try {
     const { error } = await supabase.from("services").update(serviceData).eq("id", serviceId)
 
@@ -417,6 +433,7 @@ export async function updateBarber(
     specialties: string[]
   },
 ) {
+  const supabase = createServerClient()
   try {
     const { error } = await supabase.from("barbers").update(barberData).eq("id", barberId)
 
@@ -439,9 +456,11 @@ export async function createBooking(
     booking_date: string
     booking_time: string
     total_price: number
+    total_duration: number
     customer_notes?: string
   },
 ) {
+  const supabase = createServerClient()
   try {
     const { error } = await supabase.from("bookings").insert({
       ...bookingData,
@@ -453,7 +472,7 @@ export async function createBooking(
 
     return { success: true }
   } catch (error: any) {
-    return { error: "Failed to update barber: " + error.message }
+    return { error: "Failed to create booking: " + error.message }
   }
 }
 
@@ -461,130 +480,35 @@ export async function getAvailableTimeSlots(
   shopId: string,
   barberId: number,
   date: string,
+  serviceDuration: number,
 ) {
+  const supabase = createServerClient()
   try {
-    // Fetch shop opening/closing times
-    const { data: shopData, error: shopError } = await supabase
-      .from("shops")
-      .select("opening_time, closing_time")
-      .eq("id", shopId)
-      .maybeSingle()
+    const { data, error } = await supabase.rpc('get_available_time_slots', {
+      p_shop_id: shopId,
+      p_barber_id: barberId,
+      p_date: date,
+      p_service_duration: serviceDuration,
+    })
 
-    if (shopError) {
-      return { error: "Failed to fetch shop hours: " + shopError.message }
+    if (error) {
+      return { error: "Failed to get available time slots: " + error.message }
     }
 
-    if (!shopData) {
-      return { error: "Shop not found." }
-    }
+    const timeSlots = data.map((slot: { time_slot: string }) => slot.time_slot);
 
-    const { opening_time, closing_time } = shopData;
-
-    // Step 1: Fetch existing bookings for the barber on the given date
-    const { data: bookingsData, error: bookingsError } = await supabase
-      .from("bookings")
-      .select("booking_time, service_ids") // Fetch service_ids array
-      .eq("shop_id", shopId)
-      .eq("barber_id", barberId)
-      .eq("booking_date", date)
-
-    if (bookingsError) {
-      return { error: "Failed to fetch existing bookings: " + bookingsError.message }
-    }
-
-    // Step 2: Fetch details for all unique services booked on that day
-    const allServiceIds = bookingsData?.flatMap(b => b.service_ids || []) || [];
-    const uniqueServiceIds = [...new Set(allServiceIds)];
-
-    let servicesMap = new Map<number, { duration: number }>();
-
-    if (uniqueServiceIds.length > 0) {
-        const { data: servicesData, error: servicesError } = await supabase
-            .from("services")
-            .select("id, duration")
-            .in("id", uniqueServiceIds);
-
-        if (servicesError) {
-            return { error: "Failed to fetch service details: " + servicesError.message };
-        }
-        servicesData?.forEach(s => servicesMap.set(s.id, { duration: s.duration }));
-    }
-
-
-    // Step 3: Calculate booked slots with correct durations
-    const bookedSlots: { start: string; end: string }[] = [];
-    bookingsData?.forEach(booking => {
-      const serviceDuration = booking.service_ids
-        ? booking.service_ids.reduce((sum: number, s_id: number) => sum + (servicesMap.get(s_id)?.duration || 0), 0)
-        : 30; // Default to 30 if no services
-
-      const startTime = booking.booking_time;
-      const [hours, minutes, seconds] = startTime.split(':').map(Number);
-      const startDateTime = new Date();
-      startDateTime.setHours(hours, minutes, seconds, 0);
-
-      const endDateTime = new Date(startDateTime.getTime() + serviceDuration * 60 * 1000);
-      bookedSlots.push({
-        start: startTime,
-        end: `${endDateTime.getHours().toString().padStart(2, '0')}:${endDateTime.getMinutes().toString().padStart(2, '0')}:00`
-      });
-    });
-
-    // Generate all possible time slots for the day (e.g., every 30 minutes)
-    const allSlots: string[] = [];
-    const [openHour, openMinute] = opening_time.split(':').map(Number);
-    const [closeHour, closeMinute] = closing_time.split(':').map(Number);
-
-    let currentTime = new Date();
-    currentTime.setHours(openHour, openMinute, 0, 0);
-
-    const closingTimeDate = new Date();
-    closingTimeDate.setHours(closeHour, closeMinute, 0, 0);
-
-    while (currentTime.getTime() < closingTimeDate.getTime()) {
-      allSlots.push(currentTime.toTimeString().split(' ')[0]);
-      currentTime.setMinutes(currentTime.getMinutes() + 30); // 30-minute intervals
-    }
-
-    // Filter out booked slots
-    const availableSlots = allSlots.filter(slot => {
-      const [slotHour, slotMinute] = slot.split(':').map(Number);
-      const slotStart = new Date();
-      slotStart.setHours(slotHour, slotMinute, 0, 0);
-      const slotEnd = new Date(slotStart.getTime() + 30 * 60 * 1000); // Assuming 30 min slot duration
-
-      for (const booked of bookedSlots) {
-        const [bookedStartHour, bookedStartMinute] = booked.start.split(':').map(Number);
-        const [bookedEndHour, bookedEndMinute] = booked.end.split(':').map(Number);
-
-        const bookedStartTime = new Date();
-        bookedStartTime.setHours(bookedStartHour, bookedStartMinute, 0, 0);
-        const bookedEndTime = new Date();
-        bookedEndTime.setHours(bookedEndHour, bookedEndMinute, 0, 0);
-
-        // Check for overlap
-        if (slotStart.getTime() < bookedEndTime.getTime() && slotEnd.getTime() > bookedStartTime.getTime()) {
-          return false; // This slot overlaps with a booked slot
-        }
-      }
-      return true; // This slot is available
-    });
-
-    return { timeSlots: availableSlots };
+    return { timeSlots: timeSlots, bookedSlots: [] };
   } catch (error: any) {
     return { error: "Failed to get available time slots: " + error.message };
   }
 }
 
 export async function getAvailableShops() {
+  const supabase = createServerClient()
   try {
     const { data, error } = await supabase
       .from("shops")
       .select("id, name, type, address, email, phone, is_open, opening_time, closing_time")
-      .eq("is_open", true)
-
-    console.log("Supabase getAvailableShops data:", data);
-    console.log("Supabase getAvailableShops error:", error);
 
     if (error) {
       return { error: "Failed to fetch available shops: " + error.message }
@@ -597,8 +521,8 @@ export async function getAvailableShops() {
 }
 
 export async function getShopDetailsForCustomer(shopId: string) {
+  const supabase = createServerClient()
   try {
-    console.log("Fetching details for shop ID:", shopId); // Log the shopId
     const { data, error } = await supabase
       .from("shops")
       .select(
@@ -611,9 +535,6 @@ export async function getShopDetailsForCustomer(shopId: string) {
       .eq("id", shopId)
       .maybeSingle()
 
-    console.log("Supabase fetch shop details data:", data)
-    console.log("Supabase fetch shop details error:", error)
-
     if (error) {
       return { error: "Failed to fetch shop details: " + error.message }
     }
@@ -624,59 +545,10 @@ export async function getShopDetailsForCustomer(shopId: string) {
   }
 }
 
-export async function getUpcomingBookings(customerId: string) {
-  try {
-    const { data, error } = await supabase
-      .from("bookings")
-      .select(
-        `
-        *,
-        shop:shops(name),
-        barber:barbers(name)
-      `,
-      )
-      .eq("customer_id", customerId)
-      .gte("booking_date", new Date().toISOString().split('T')[0]) // Greater than or equal to today
-      .order("booking_date", { ascending: true })
-      .order("booking_time", { ascending: true })
 
-    if (error) {
-      return { error: "Failed to fetch upcoming bookings: " + error.message }
-    }
-
-    return { bookings: data }
-  } catch (error: any) {
-    return { error: "Failed to fetch upcoming bookings: " + error.message }
-  }
-}
-
-export async function getPreviousBookings(customerId: string) {
-  try {
-    const { data, error } = await supabase
-      .from("bookings")
-      .select(
-        `
-        *,
-        shop:shops(name),
-        barber:barbers(name)
-      `,
-      )
-      .eq("customer_id", customerId)
-      .lt("booking_date", new Date().toISOString().split('T')[0]) // Less than today
-      .order("booking_date", { ascending: false })
-      .order("booking_time", { ascending: false })
-
-    if (error) {
-      return { error: "Failed to fetch previous bookings: " + error.message }
-    }
-
-    return { bookings: data }
-  } catch (error: any) {
-    return { error: "Failed to fetch previous bookings: " + error.message }
-  }
-}
 
 export async function getShopOwnerDashboard(shopId: string) {
+  const supabase = createServerClient()
   try {
     const { data, error } = await supabase
       .from("shops")
@@ -701,7 +573,32 @@ export async function getShopOwnerDashboard(shopId: string) {
   }
 }
 
+export async function getShopBookings(shopId: string) {
+  const supabase = createServerClient()
+  try {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(`
+        *,
+        customer:customers(name, phone, email),
+        barber:barbers(name)
+      `)
+      .eq("shop_id", shopId)
+      .order("booking_date", { ascending: true })
+      .order("booking_time", { ascending: true });
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    return { bookings: data };
+  } catch (error: any) {
+    return { error: "Failed to fetch shop bookings: " + error.message };
+  }
+}
+
 export async function getAllData() {
+  const supabase = createServerClient()
   try {
     const { data: shops, error: shopsError } = await supabase.from("shops").select("*");
     const { data: services, error: servicesError } = await supabase.from("services").select("*");
@@ -718,3 +615,23 @@ export async function getAllData() {
     return { error: "Failed to fetch all data: " + error.message };
   }
 }
+
+export async function getNearbyShops(latitude: number, longitude: number, radiusMeters: number = 10000) {
+  const supabase = createServerClient()
+  try {
+    const { data, error } = await supabase.rpc('get_nearby_shops', {
+      p_latitude: latitude,
+      p_longitude: longitude,
+      p_radius_meters: radiusMeters,
+    })
+
+    if (error) {
+      return { error: error.message }
+    }
+
+    return { shops: data }
+  } catch (error: any) {
+    return { error: "Failed to fetch nearby shops: " + error.message }
+  }
+}
+

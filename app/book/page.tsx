@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { Suspense, useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,7 +13,6 @@ import { Calendar, User, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 
-import { useEffect } from "react"
 import { getShopDetailsForCustomer, getAvailableTimeSlots, createBooking } from "@/lib/profile-actions"
 import { useAuth } from "@/components/auth-provider"
 
@@ -36,7 +35,7 @@ interface ShopDetails {
   barbers: Barber[]
 }
 
-export default function BookingPage() {
+function BookingPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const shopId = searchParams.get("shopId")
@@ -243,7 +242,7 @@ export default function BookingPage() {
                 <SelectContent>
                   {shop?.services.map((service) => (
                     <SelectItem key={service.id} value={service.id.toString()}>
-                      {service.name} - {service.duration} min - ${service.price}
+                      {service.name} - {service.duration} min - ₹{service.price}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -391,7 +390,7 @@ export default function BookingPage() {
                     <strong>Duration:</strong> {shop?.services.find((s) => s.id.toString() === selectedService)?.duration} min
                   </p>
                   <p>
-                    <strong>Price:</strong> ${shop?.services.find((s) => s.id.toString() === selectedService)?.price}
+                    <strong>Price:</strong> ₹{shop?.services.find((s) => s.id.toString() === selectedService)?.price}
                   </p>
                 </div>
               ) : (
@@ -417,5 +416,13 @@ export default function BookingPage() {
         </form>
       </div>
     </div>
+  )
+}
+
+export default function BookingPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <BookingPageContent />
+    </Suspense>
   )
 }

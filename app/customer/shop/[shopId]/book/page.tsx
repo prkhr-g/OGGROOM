@@ -39,7 +39,6 @@ interface Barber {
   id: number
   name: string
   specialties: string[]
-  rating: number
   experience: string
   phone: string
   email: string
@@ -60,6 +59,7 @@ export default function BookAppointmentScreen() {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
   const [selectedTime, setSelectedTime] = useState<string>("")
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([])
+  const [bookedSlots, setBookedSlots] = useState<{ start: string; end: string }[]>([])
   const [isFetchingSlots, setIsFetchingSlots] = useState(false)
 
   useEffect(() => {
@@ -88,30 +88,6 @@ export default function BookAppointmentScreen() {
     fetchShopDetails()
   }, [shopId, searchParams])
 
-  useEffect(() => {
-    const fetchTimeSlots = async () => {
-      if (selectedBarberId && selectedDate && shopId) {
-        setIsFetchingSlots(true);
-        setError(null);
-        try {
-          const formattedDate = selectedDate.toISOString().split('T')[0];
-          const result = await getAvailableTimeSlots(shopId, selectedBarberId, formattedDate);
-          if (result.error) {
-            throw new Error(result.error);
-          }
-          setAvailableTimeSlots(result.timeSlots || []);
-        } catch (err: any) {
-          setError(err.message);
-        } finally {
-          setIsFetchingSlots(false);
-        }
-      } else {
-        setAvailableTimeSlots([]);
-      }
-    };
-    fetchTimeSlots();
-  }, [selectedBarberId, selectedDate, shopId]);
-
   const handleServiceToggle = (serviceId: number) => {
     setSelectedServiceIds((prev) =>
       prev.includes(serviceId) ? prev.filter((id) => id !== serviceId) : [...prev, serviceId],
@@ -130,6 +106,31 @@ export default function BookAppointmentScreen() {
     return selectedServicesDetails.reduce((sum, service) => sum + service.duration, 0)
   }, [selectedServicesDetails])
 
+  useEffect(() => {
+    const fetchTimeSlots = async () => {
+      if (selectedBarberId && selectedDate && shopId && totalDuration > 0) {
+        setIsFetchingSlots(true);
+        setError(null);
+        try {
+          const formattedDate = selectedDate.toISOString().split('T')[0];
+          const result = await getAvailableTimeSlots(shopId, selectedBarberId, formattedDate, totalDuration);
+          if (result.error) {
+            throw new Error(result.error);
+          }
+          setAvailableTimeSlots(result.timeSlots || []);
+          setBookedSlots(result.bookedSlots || []);
+        } catch (err: any) {
+          setError(err.message);
+        } finally {
+          setIsFetchingSlots(false);
+        }
+      } else {
+        setAvailableTimeSlots([]);
+      }
+    };
+    fetchTimeSlots();
+  }, [selectedBarberId, selectedDate, shopId, totalDuration]);
+
   const formatDuration = (minutes: number) => {
     if (minutes < 60) return `${minutes} min`
     const h = Math.floor(minutes / 60)
@@ -137,24 +138,45 @@ export default function BookAppointmentScreen() {
     return `${h}h${m > 0 ? ` ${m}min` : ""}`
   }
 
+  const isSlotBooked = (time: string) => {
+    const [slotHour, slotMinute] = time.split(':').map(Number);
+    const slotStart = new Date();
+    slotStart.setHours(slotHour, slotMinute, 0, 0);
+
+    for (const booked of bookedSlots) {
+      const [bookedStartHour, bookedStartMinute] = booked.start.split(':').map(Number);
+      const [bookedEndHour, bookedEndMinute] = booked.end.split(':').map(Number);
+
+      const bookedStartTime = new Date();
+      bookedStartTime.setHours(bookedStartHour, bookedStartMinute, 0, 0);
+      const bookedEndTime = new Date();
+      bookedEndTime.setHours(bookedEndHour, bookedEndMinute, 0, 0);
+
+      if (slotStart >= bookedStartTime && slotStart < bookedEndTime) {
+        return true;
+      }
+    }
+    return false;
+  };
+
   const selectedBarberData = shop?.barbers.find((b) => b.id === selectedBarberId)
   const canProceed = selectedServiceIds.length > 0 && selectedBarberId && selectedDate && selectedTime
 
   if (isLoading) {
     return (
-      <div className='min-h-screen bg-slate-50 flex items-center justify-center'>
-        <Loader2 className='h-8 w-8 animate-spin text-blue-600' />
+      <div className='min-h-screen bg-background flex items-center justify-center'>
+        <Loader2 className='h-8 w-8 animate-spin text-primary' />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className='min-h-screen bg-slate-50 flex items-center justify-center'>
-        <Card className='max-w-md w-full'>
+      <div className='min-h-screen bg-background flex items-center justify-center'>
+        <Card className='max-w-md w-full bg-card'>
           <CardHeader><CardTitle>Error</CardTitle></CardHeader>
           <CardContent className='p-6 text-center'>
-            <p className='text-red-600 mb-4'>{error}</p>
+            <p className='text-destructive mb-4'>{error}</p>
             <Button onClick={() => window.location.reload()}>Try Again</Button>
           </CardContent>
         </Card>
@@ -164,10 +186,10 @@ export default function BookAppointmentScreen() {
 
   if (!shop) {
     return (
-      <div className='min-h-screen bg-slate-50 flex items-center justify-center'>
-        <Card className='max-w-md w-full'>
+      <div className='min-h-screen bg-background flex items-center justify-center'>
+        <Card className='max-w-md w-full bg-card'>
           <CardContent className='p-6 text-center'>
-            <p className='text-red-600 mb-4'>Shop not found.</p>
+            <p className='text-destructive mb-4'>Shop not found.</p>
             <Link href='/customer/shop'><Button>Back to Shops</Button></Link>
           </CardContent>
         </Card>
@@ -176,8 +198,8 @@ export default function BookAppointmentScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="min-h-screen bg-background">
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center">
           <Link href={`/customer/shop/${shop.id}`}>
             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary mr-2">
@@ -185,16 +207,16 @@ export default function BookAppointmentScreen() {
               Back to Shop
             </Button>
           </Link>
-          <h1 className="text-xl font-semibold text-gray-900">Book at {shop.name}</h1>
+          <h1 className="text-xl font-semibold text-foreground">Book at {shop.name}</h1>
         </div>
       </header>
 
       <main className="container mx-auto px-4 py-6 space-y-6 max-w-4xl">
         {/* Step 1: Select Services */}
-        <Card className="shadow-lg">
+        <Card className="shadow-lg bg-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl text-gray-800">
-              <span className="w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-base font-bold">
+            <CardTitle className="flex items-center gap-2 text-xl text-foreground">
+              <span className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-base font-bold">
                 1
               </span>
               Select Services
@@ -211,8 +233,8 @@ export default function BookAppointmentScreen() {
                   className={`flex items-center justify-between p-4 rounded-lg border cursor-pointer transition-all hover:shadow-sm
                     ${
                       selectedServiceIds.includes(service.id)
-                        ? "bg-blue-50 border-blue-500 ring-1 ring-blue-500"
-                        : "bg-white hover:bg-slate-50 border-slate-200"
+                        ? "bg-primary/10 border-primary ring-1 ring-primary"
+                        : "bg-background hover:bg-muted/50 border-border"
                     }`}
                   onClick={() => handleServiceToggle(service.id)}
                 >
@@ -221,21 +243,20 @@ export default function BookAppointmentScreen() {
                       id={`service-${service.id}`}
                       checked={selectedServiceIds.includes(service.id)}
                       onCheckedChange={() => handleServiceToggle(service.id)}
-                      className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                     />
                     <div className="flex-1">
                       <Label
                         htmlFor={`service-${service.id}`}
-                        className="font-semibold text-gray-800 cursor-pointer text-base"
+                        className="font-semibold text-foreground cursor-pointer text-base"
                       >
                         {service.name}
                       </Label>
-                      <p className="text-sm text-slate-600 mt-1">{service.description}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
                     </div>
                   </div>
                   <div className="text-right ml-4">
-                    <p className="font-bold text-gray-800 text-lg">${service.price.toFixed(2)}</p>
-                    <p className="text-sm text-slate-500 flex items-center justify-end mt-1">
+                    <p className="font-bold text-foreground text-lg">₹{service.price.toFixed(2)}</p>
+                    <p className="text-sm text-muted-foreground flex items-center justify-end mt-1">
                       <Clock className="h-3 w-3 mr-1" />
                       {formatDuration(service.duration)}
                     </p>
@@ -248,10 +269,10 @@ export default function BookAppointmentScreen() {
 
         {/* Step 2: Select Barber (Enabled if services are selected) */}
         {selectedServiceIds.length > 0 && (
-          <Card className="shadow-lg">
+          <Card className="shadow-lg bg-card">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl text-gray-800">
-                <span className="w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-base font-bold">
+              <CardTitle className="flex items-center gap-2 text-xl text-foreground">
+                <span className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-base font-bold">
                   2
                 </span>
                 Select Barber
@@ -265,7 +286,7 @@ export default function BookAppointmentScreen() {
                   <Card
                     key={barber.id}
                     className={`cursor-pointer transition-all p-4 rounded-lg border
-                                    ${selectedBarberId === barber.id ? "bg-blue-50 border-blue-500 ring-2 ring-blue-500" : "bg-white hover:bg-slate-50 border-slate-200"}`}
+                                    ${selectedBarberId === barber.id ? "bg-primary/10 border-primary ring-2 ring-primary" : "bg-background hover:bg-muted/50 border-border"}`}
                     onClick={() => setSelectedBarberId(barber.id)}
                   >
                     <div className="flex items-center gap-3">
@@ -279,10 +300,8 @@ export default function BookAppointmentScreen() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <h3 className="font-semibold text-gray-700">{barber.name}</h3>
-                        <p className="text-sm text-slate-500">
-                          Rating: {barber.rating} <Star className="inline h-3 w-3 fill-yellow-400 text-yellow-400" />
-                        </p>
+                        <h3 className="font-semibold text-foreground">{barber.name}</h3>
+                        
                         <div className="flex flex-wrap gap-1 mt-1">
                           {barber.specialties.map((specialty, index) => (
                             <Badge key={index} variant="secondary" className="text-xs">
@@ -302,10 +321,10 @@ export default function BookAppointmentScreen() {
         {/* Step 3: Select Date & Time (Enabled if barber is selected) */}
         {selectedBarberId && (
           <div className="grid md:grid-cols-2 gap-6">
-            <Card className="shadow-lg">
+            <Card className="shadow-lg bg-card">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl text-gray-800">
-                  <span className="w-7 h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-base font-bold">
+                <CardTitle className="flex items-center gap-2 text-xl text-foreground">
+                  <span className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-base font-bold">
                     3
                   </span>
                   Select Date
@@ -319,14 +338,14 @@ export default function BookAppointmentScreen() {
                   disabled={(date) =>
                     date < new Date(new Date().setDate(new Date().getDate() - 1)) || date.getDay() === 0
                   } // Disable past dates and Sundays
-                  className="rounded-md border border-slate-200 p-0"
+                  className="rounded-md border-border p-0"
                 />
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg">
+            <Card className="shadow-lg bg-card">
               <CardHeader>
-                <CardTitle className="text-xl text-gray-800">Select Time</CardTitle>
+                <CardTitle className="text-xl text-foreground">Select Time</CardTitle>
                 <CardDescription>
                   {selectedDate
                     ? `Available slots for ${selectedDate.toLocaleDateString()}`
@@ -335,9 +354,9 @@ export default function BookAppointmentScreen() {
               </CardHeader>
               <CardContent>
                 {isFetchingSlots ? (
-                  <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-blue-600" /></div>
+                  <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
                 ) : availableTimeSlots.length === 0 ? (
-                  <p className="text-slate-500 text-center py-8">No available slots for this date and barber.</p>
+                  <p className="text-muted-foreground text-center py-8">No available slots for this date and barber.</p>
                 ) : (
                   <div className="grid grid-cols-3 gap-2">
                     {availableTimeSlots.map((time) => (
@@ -346,7 +365,8 @@ export default function BookAppointmentScreen() {
                         variant={selectedTime === time ? "default" : "outline"}
                         size="sm"
                         onClick={() => setSelectedTime(time)}
-                        className={`text-xs ${selectedTime === time ? "bg-blue-600 hover:bg-blue-700" : "border-slate-300"}`}
+                        disabled={isSlotBooked(time)}
+                        className="text-xs"
                       >
                         {time.substring(0, 5)} {/* Display HH:MM */}
                       </Button>
@@ -360,17 +380,17 @@ export default function BookAppointmentScreen() {
 
         {/* Booking Summary & Confirm Button */}
         {canProceed && (
-          <Card className="shadow-xl mt-8 sticky bottom-4 z-10">
+          <Card className="shadow-xl mt-8 sticky bottom-4 z-10 bg-card">
             <CardHeader>
-              <CardTitle className="text-xl text-gray-800">Booking Summary</CardTitle>
+              <CardTitle className="text-xl text-foreground">Booking Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <h4 className="font-medium text-gray-700 mb-1">Selected Services:</h4>
-                <ul className="list-disc list-inside pl-1 space-y-1 text-sm text-slate-600">
+                <h4 className="font-medium text-foreground mb-1">Selected Services:</h4>
+                <ul className="list-disc list-inside pl-1 space-y-1 text-sm text-muted-foreground">
                   {selectedServicesDetails.map((s) => (
                     <li key={s.id}>
-                      {s.name} (${s.price.toFixed(2)}) - {formatDuration(s.duration)}
+                      {s.name} (₹{s.price.toFixed(2)}) - {formatDuration(s.duration)}
                     </li>
                   ))}
                 </ul>
@@ -390,20 +410,20 @@ export default function BookAppointmentScreen() {
                   <strong>Time:</strong> {selectedTime}
                 </p>
               )}
-              <div className="border-t border-slate-200 pt-3 mt-3 space-y-1">
+              <div className="border-t border-border pt-3 mt-3 space-y-1">
                 <p className="flex justify-between text-sm">
                   <span>Total Estimated Duration:</span>
                   <span className="font-medium">{formatDuration(totalDuration)}</span>
                 </p>
                 <p className="flex justify-between text-lg font-semibold">
                   <span>Total Price:</span>
-                  <span>${totalPrice.toFixed(2)}</span>
+                  <span>₹{totalPrice.toFixed(2)}</span>
                 </p>
               </div>
               <Link
                 href={`/confirmation?shop=${shop.id}&services=${selectedServiceIds.join(",")}&barber=${selectedBarberId}&date=${selectedDate?.toISOString()}&time=${selectedTime}`}
               >
-                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-lg py-3 mt-2">
+                <Button className="w-full text-lg py-3 mt-2">
                   Continue to Confirmation
                 </Button>
               </Link>

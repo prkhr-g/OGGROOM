@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Store, User, Loader2 } from "lucide-react"
+import { ArrowLeft, Store, User, Loader2, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { signUpCustomer, signUpShopOwner, signInUser } from "@/lib/auth-supabase"
@@ -21,6 +21,7 @@ export default function AuthScreen() {
   const [currentUserType, setCurrentUserType] = useState(initialUserType)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
 
   // Form state for customer signup
   const [customerSignupData, setCustomerSignupData] = useState({
@@ -30,10 +31,8 @@ export default function AuthScreen() {
     sex: "",
     phone: "",
     password: "",
-    location: "", // Add location field
   })
 
-  // Form state for shop owner signup
   const [shopOwnerSignupData, setShopOwnerSignupData] = useState({
     shopName: "",
     ownerName: "",
@@ -41,7 +40,6 @@ export default function AuthScreen() {
     email: "",
     phone: "",
     password: "",
-    location: "", // Add location field
   })
 
   // Login form state
@@ -179,14 +177,25 @@ export default function AuthScreen() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password-login">Password</Label>
-                    <Input
-                      id="password-login"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={loginData.password}
-                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                      required
-                    />
+                    <div className="relative">
+                      <Input
+                        id="password-login"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        value={loginData.password}
+                        onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute inset-y-0 right-0 h-full px-3 py-2 text-gray-500"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? (
@@ -269,27 +278,28 @@ export default function AuthScreen() {
                           required
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="location-signup-customer">Location</Label>
-                        <Input
-                          id="location-signup-customer"
-                          type="text"
-                          placeholder="Enter your city/area"
-                          value={customerSignupData.location}
-                          onChange={(e) => setCustomerSignupData({ ...customerSignupData, location: e.target.value })}
-                          required
-                        />
-                      </div>
+                      
                       <div className="space-y-2">
                         <Label htmlFor="password-signup-customer">Password</Label>
-                        <Input
-                          id="password-signup-customer"
-                          type="password"
-                          placeholder="Create a password"
-                          value={customerSignupData.password}
-                          onChange={(e) => setCustomerSignupData({ ...customerSignupData, password: e.target.value })}
-                          required
-                        />
+                        <div className="relative">
+                          <Input
+                            id="password-signup-customer"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Create a password"
+                            value={customerSignupData.password}
+                            onChange={(e) => setCustomerSignupData({ ...customerSignupData, password: e.target.value })}
+                            required
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute inset-y-0 right-0 h-full px-3 py-2 text-gray-500"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </Button>
+                        </div>
                       </div>
                     </>
                   ) : (
@@ -329,14 +339,25 @@ export default function AuthScreen() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="password-signup-shop">Password</Label>
-                        <Input
-                          id="password-signup-shop"
-                          type="password"
-                          placeholder="Create a password"
-                          value={shopOwnerSignupData.password}
-                          onChange={(e) => setShopOwnerSignupData({ ...shopOwnerSignupData, password: e.target.value })}
-                          required
-                        />
+                        <div className="relative">
+                          <Input
+                            id="password-signup-shop"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Create a password"
+                            value={shopOwnerSignupData.password}
+                            onChange={(e) => setShopOwnerSignupData({ ...shopOwnerSignupData, password: e.target.value })}
+                            required
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute inset-y-0 right-0 h-full px-3 py-2 text-gray-500"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </Button>
+                        </div>
                       </div>
                     </>
                   )}

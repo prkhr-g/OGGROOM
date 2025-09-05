@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loader2, CheckCircle, XCircle } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { getShopDetailsForCustomer, createBooking } from '@/lib/profile-actions'
 import { useAuth } from '@/components/auth-provider'
 
@@ -94,6 +95,7 @@ export default function ConfirmationPage() {
         booking_date: bookingDate,
         booking_time: time,
         total_price: totalPrice,
+        total_duration: totalDuration,
         customer_notes: "", // Optional: Add a field for notes if needed
       });
 
@@ -118,19 +120,19 @@ export default function ConfirmationPage() {
 
   if (isLoading) {
     return (
-      <div className='min-h-screen bg-slate-50 flex items-center justify-center'>
-        <Loader2 className='h-8 w-8 animate-spin text-blue-600' />
+      <div className='min-h-screen bg-background flex items-center justify-center'>
+        <Loader2 className='h-8 w-8 animate-spin text-primary' />
       </div>
     )
   }
 
   if (error && bookingSuccess === null) {
     return (
-      <div className='min-h-screen bg-slate-50 flex items-center justify-center'>
-        <Card className='max-w-md w-full'>
+      <div className='min-h-screen bg-background flex items-center justify-center'>
+        <Card className='max-w-md w-full bg-card'>
           <CardHeader><CardTitle>Error</CardTitle></CardHeader>
           <CardContent className='p-6 text-center'>
-            <p className='text-red-600 mb-4'>{error}</p>
+            <p className='text-destructive mb-4'>{error}</p>
             <Button onClick={() => router.back()}>Go Back</Button>
           </CardContent>
         </Card>
@@ -140,11 +142,11 @@ export default function ConfirmationPage() {
 
   if (!shop || !selectedBarber || selectedServices.length === 0 || !date || !time) {
     return (
-      <div className='min-h-screen bg-slate-50 flex items-center justify-center'>
-        <Card className='max-w-md w-full'>
+      <div className='min-h-screen bg-background flex items-center justify-center'>
+        <Card className='max-w-md w-full bg-card'>
           <CardHeader><CardTitle>Missing Booking Details</CardTitle></CardHeader>
           <CardContent className='p-6 text-center'>
-            <p className='text-red-600 mb-4'>Some booking details are missing. Please go back and select them.</p>
+            <p className='text-destructive mb-4'>Some booking details are missing. Please go back and select them.</p>
             <Link href={`/customer/shop/${shopId}`}><Button>Back to Shop</Button></Link>
           </CardContent>
         </Card>
@@ -153,51 +155,60 @@ export default function ConfirmationPage() {
   }
 
   return (
-    <div className='min-h-screen bg-gray-50'>
-      <header className='bg-white shadow-sm border-b'>
+    <div className='min-h-screen bg-background'>
+      <header className='bg-card shadow-sm border-b border-border'>
         <div className='max-w-6xl mx-auto px-4 py-4 flex items-center justify-between'>
-          <h1 className='text-xl font-semibold text-gray-900'>Confirm Your Booking</h1>
+          <div className="flex items-center gap-2">
+            <Image src="/logo.png" alt="OGGroom Logo" width={30} height={30} />
+            <h1 className='text-xl font-semibold text-foreground'>Confirm Your Booking</h1>
+          </div>
           <Link href={`/customer/shop/${shopId}`}><Button variant='outline'>Change Booking</Button></Link>
         </div>
       </header>
 
       <main className='max-w-6xl mx-auto px-4 py-6 space-y-6'>
-        <Card className='shadow-lg'>
+        <Card className='shadow-lg bg-card'>
           <CardHeader><CardTitle>Booking Details</CardTitle></CardHeader>
           <CardContent className='space-y-4'>
             <p><strong>Shop:</strong> {shop.name}</p>
             <div>
-              <h4 className='font-medium text-gray-700 mb-1'>Selected Services:</h4>
-              <ul className='list-disc list-inside pl-1 space-y-1 text-sm text-slate-600'>
+              <h4 className='font-medium text-foreground mb-1'>Selected Services:</h4>
+              <ul className='list-disc list-inside pl-1 space-y-1 text-sm text-muted-foreground'>
                 {selectedServices.map(s => (
-                  <li key={s.id}>{s.name} (${s.price.toFixed(2)}) - {formatDuration(s.duration)}</li>
+                  <li key={s.id}>{s.name} (₹{s.price.toFixed(2)}) - {formatDuration(s.duration)}</li>
                 ))}
               </ul>
             </div>
             <p><strong>Barber:</strong> {selectedBarber.name}</p>
             <p><strong>Date:</strong> {new Date(date).toLocaleDateString()}</p>
             <p><strong>Time:</strong> {time}</p>
-            <div className='border-t border-slate-200 pt-3 mt-3 space-y-1'>
+            <div className='border-t border-border pt-3 mt-3 space-y-1'>
               <p className='flex justify-between text-sm'><span>Total Estimated Duration:</span><span className='font-medium'>{formatDuration(totalDuration)}</span></p>
-              <p className='flex justify-between text-lg font-semibold'><span>Total Price:</span><span>${totalPrice.toFixed(2)}</span></p>
+              <p className='flex justify-between text-lg font-semibold'><span>Total Price:</span><span>₹{totalPrice.toFixed(2)}</span></p>
             </div>
           </CardContent>
         </Card>
 
         {bookingSuccess === true && (
-          <Card className='shadow-lg border-green-500 bg-green-50'>
-            <CardContent className='p-4 flex items-center gap-3'>
-              <CheckCircle className='h-6 w-6 text-green-600' />
-              <p className='text-green-800 font-medium'>Booking confirmed successfully!</p>
+          <Card className='shadow-lg border-green-500 bg-green-50/10'>
+            <CardContent className='p-6 flex flex-col items-center text-center gap-4'>
+              <CheckCircle className='h-10 w-10 text-green-500' />
+              <div>
+                <h3 className='text-xl font-semibold text-green-500'>Booking Confirmed!</h3>
+                <p className='text-green-500/80 mt-1'>Your appointment has been successfully scheduled.</p>
+              </div>
+              <Link href="/customer/home">
+                <Button className='mt-2'>Back to Home</Button>
+              </Link>
             </CardContent>
           </Card>
         )}
 
         {bookingSuccess === false && (
-          <Card className='shadow-lg border-red-500 bg-red-50'>
+          <Card className='shadow-lg border-destructive bg-destructive/10'>
             <CardContent className='p-4 flex items-center gap-3'>
-              <XCircle className='h-6 w-6 text-red-600' />
-              <p className='text-red-800 font-medium'>{error || 'Booking failed. Please try again.'}</p>
+              <XCircle className='h-6 w-6 text-destructive' />
+              <p className='text-destructive-foreground font-medium'>{error || 'Booking failed. Please try again.'}</p>
             </CardContent>
           </Card>
         )}

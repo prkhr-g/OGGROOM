@@ -1,16 +1,11 @@
 "use client"
 
-// import type React from "react"
 
-// import { createContext, useContext, useEffect, useState, useMemo } from "react" // Import useMemo
-// import type { User } from "@supabase/supabase-js"
-// import { createClient } from "@/lib/supabase"
-// import {supabase} from "@/lib/supabase"
 
 import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
-import type { User, AuthChangeEvent, Session } from "@supabase/supabase-js"
-import { supabase } from "@/lib/supabase"
+import type { User } from "@supabase/supabase-js"
+import { createBrowserClient } from "@/lib/supabase-client"
 
 interface AuthContextType {
   user: User | null
@@ -34,17 +29,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // Memoize the Supabase client to ensure it's created only once
-  // const supabase = useMemo(() => createClient(), [])
+  // Create a singleton client for the browser
+  const [supabase] = useState(() => createBrowserClient())
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
-
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -52,8 +40,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
-  }, [supabase]) // Add supabase to dependency array
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [supabase])
 
   return <AuthContext.Provider value={{ user, loading }}>{children}</AuthContext.Provider>
 }

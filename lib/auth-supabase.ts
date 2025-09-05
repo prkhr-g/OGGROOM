@@ -1,6 +1,4 @@
-// import { createClient } from "@supabase/supabase-js"
-import { add } from "date-fns"
-import { supabase } from "./supabase"
+import { createBrowserClient } from "./supabase-client"
 
 export interface CustomerSignupData {
   name: string
@@ -23,9 +21,8 @@ export interface ShopOwnerSignupData {
 }
 
 export async function signUpCustomer(data: CustomerSignupData) {
+  const supabase = createBrowserClient()
   try {
-    // const supabase = createClient()
-
     // Sign up with Supabase Auth (this will send OTP email)
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
@@ -58,9 +55,8 @@ export async function signUpCustomer(data: CustomerSignupData) {
 }
 
 export async function signUpShopOwner(data: ShopOwnerSignupData) {
+  const supabase = createBrowserClient()
   try {
-    // const supabase = createClientComponentClient()
-
     // Sign up with Supabase Auth (this will send OTP email)
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email: data.email,
@@ -93,34 +89,35 @@ export async function signUpShopOwner(data: ShopOwnerSignupData) {
 }
 
 export async function verifyOTP(email: string, token: string) {
+  const supabase = createBrowserClient()
   try {
-    // const supabase = createClientComponentClient()
-
+    console.log("Attempting to verify OTP for email:", email, "with token:", token);
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token,
       type: "signup",
-    })
+    });
 
     if (error) {
-      return { error: error.message }
+      console.error("OTP verification failed:", error.message);
+      return { error: error.message };
     }
 
-    if (data.user) {
-      // Now create the user profile after successful verification
-      await createUserProfile(data.user)
-    }
+    console.log("OTP verification successful. User data:", data.user);
 
-    return { success: true, user: data.user }
+    // The manual call to createUserProfile has been removed.
+    // Profile creation is now handled by your database trigger.
+
+    return { success: true, user: data.user };
   } catch (error: any) {
-    return { error: "An unexpected error occurred during verification: " + error.message }
+    console.error("An unexpected error occurred during verification:", error.message);
+    return { error: "An unexpected error occurred during verification: " + error.message };
   }
 }
 
 export async function resendOTP(email: string) {
+  const supabase = createBrowserClient()
   try {
-    // const supabase = createClientComponentClient()
-
     const { error } = await supabase.auth.resend({
       type: "signup",
       email,
@@ -137,67 +134,11 @@ export async function resendOTP(email: string) {
 }
 
 // Helper function to create user profile after email verification
-async function createUserProfile(user: any) {
-  try {
-    const supabaseAdmin = createAdminClient()
-    const userType = user.user_metadata?.user_type
 
-    if (userType === "customer") {
-      // Create customer profile
-      const { error } = await supabaseAdmin.from("customers").insert({
-        id: user.id,
-        name: user.user_metadata.name,
-        email: user.email,
-        age: user.user_metadata.age,
-        sex: user.user_metadata.sex,
-        phone: user.user_metadata.phone,
-        location: user.user_metadata.location, // Add location to customer profile
-      })
-
-      if (error) {
-        console.error("Failed to create customer profile:", error)
-      }
-    } else if (userType === "shop-owner") {
-      // Create shop first
-      const { data: shopData, error: shopError } = await supabaseAdmin
-        .from("shops")
-        .insert({
-          name: user.user_metadata.shopName,
-          type: user.user_metadata.shopType,
-          email: user.email,
-          phone: user.user_metadata.phone,
-          address: user.user_metadata.location, // Add location to shop
-        })
-        .select()
-        .single()
-
-      if (shopError) {
-        console.error("Failed to create shop:", shopError)
-        return
-      }
-
-      // Create shop owner profile
-      const { error: ownerError } = await supabaseAdmin.from("shop_owners").insert({
-        id: user.id,
-        name: user.user_metadata.name,
-        email: user.email,
-        shop_id: shopData.id,
-        phone: user.user_metadata.phone,
-      })
-
-      if (ownerError) {
-        console.error("Failed to create shop owner profile:", ownerError)
-      }
-    }
-  } catch (error) {
-    console.error("Error creating user profile:", error)
-  }
-}
 
 export async function signInUser(email: string, password: string) {
+  const supabase = createBrowserClient()
   try {
-    // const supabase = createClientComponentClient()
-
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -219,13 +160,13 @@ export async function signInUser(email: string, password: string) {
 }
 
 export async function signOutUser() {
-  // const supabase = createClientComponentClient()
+  const supabase = createBrowserClient()
   const { error } = await supabase.auth.signOut()
   return { error: error?.message }
 }
 
 export async function getCurrentUser() {
-  // const supabase = createClientComponentClient()
+  const supabase = createBrowserClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()

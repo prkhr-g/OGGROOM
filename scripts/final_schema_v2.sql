@@ -1,10 +1,10 @@
 -- 1. Drop existing tables and functions to start fresh
-DROP TABLE IF EXISTS bookings;
-DROP TABLE IF EXISTS barbers;
-DROP TABLE IF EXISTS services;
-DROP TABLE IF EXISTS shop_owners;
-DROP TABLE IF EXISTS shops;
-DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS bookings CASCADE;
+DROP TABLE IF EXISTS barbers CASCADE;
+DROP TABLE IF EXISTS services CASCADE;
+DROP TABLE IF EXISTS shop_owners CASCADE;
+DROP TABLE IF EXISTS shops CASCADE;
+DROP TABLE IF EXISTS customers CASCADE;
 DROP FUNCTION IF EXISTS is_shop_owner(uuid);
 DROP FUNCTION IF EXISTS create_shop_and_owner(text, text, text, text, text, text, text, text, time, time);
 DROP FUNCTION IF EXISTS create_customer_profile(text, text);
@@ -80,6 +80,7 @@ CREATE TABLE IF NOT EXISTS bookings (
     booking_time TIME NOT NULL,
     status VARCHAR(50) DEFAULT 'pending',
     total_price DECIMAL(10,2),
+    total_duration INTEGER,
     customer_notes TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -121,9 +122,14 @@ SECURITY DEFINER
 AS $
 DECLARE
   new_shop_id UUID;
+  existing_owner_id UUID;
 BEGIN
-  -- Create customer profile first
-  PERFORM create_customer_profile(owner_name, owner_email);
+  -- Check if an owner already exists for the current authenticated user
+  SELECT id INTO existing_owner_id FROM public.shop_owners WHERE id = auth.uid();
+
+  IF existing_owner_id IS NOT NULL THEN
+    RAISE EXCEPTION 'User already owns a shop. Cannot create another shop.';
+  END IF;
 
   -- Then create the shop
   INSERT INTO public.shops (name, type, email, phone, address, opening_time, closing_time)
@@ -134,7 +140,6 @@ BEGIN
   INSERT INTO public.shop_owners (id, name, email, phone, shop_id)
   VALUES (auth.uid(), owner_name, owner_email, owner_phone, new_shop_id);
 
-  
 END;
 $;
 
@@ -160,6 +165,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE POLICY "Allow all access to own shop owner profile" ON public.shop_owners FOR ALL USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 CREATE POLICY "Allow owners to view, update, delete own shops" ON public.shops FOR ALL USING (is_shop_owner(id));
 CREATE POLICY "Allow authenticated to see all shops" ON public.shops FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Allow authenticated users to reference shops" ON public.shops FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "Allow owners to manage shop data" ON public.services FOR ALL USING (is_shop_owner(shop_id)) WITH CHECK (is_shop_owner(shop_id));
 CREATE POLICY "Allow authenticated to see all services" ON public.services FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "Allow owners to manage shop data" ON public.barbers FOR ALL USING (is_shop_owner(shop_id)) WITH CHECK (is_shop_owner(shop_id));
