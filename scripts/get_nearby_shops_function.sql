@@ -18,7 +18,7 @@ RETURNS TABLE (
     shop_latitude double precision,
     shop_longitude double precision,
     distance_meters double precision,
-    average_rating double precision
+        average_rating NUMERIC(3, 2)
 )
 LANGUAGE plpgsql
 AS $$
