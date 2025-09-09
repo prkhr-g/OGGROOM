@@ -18,6 +18,8 @@ import { updateCustomerProfile, getCustomerProfile } from "@/lib/profile-actions
 
 const AddressAutocompleteInput = dynamic(() => import('@/components/ui/address-autocomplete-input').then(mod => mod.AddressAutocompleteInput), { ssr: false, loading: () => <Loader2 className='h-8 w-8 animate-spin text-primary' /> });
 
+import { Skeleton } from "@/components/ui/skeleton"
+
 interface CustomerProfile {
   id: string
   name: string
@@ -131,8 +133,68 @@ function CustomerProfilePageContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="min-h-screen bg-background flex flex-col items-center py-6">
+        {/* Skeleton Header */}
+        <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container flex h-16 items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-10 w-24" />
+              <Skeleton className="h-10 w-24" />
+            </div>
+            <Skeleton className="h-9 w-9 rounded-full" />
+          </div>
+        </header>
+
+        <main className="flex flex-col items-center py-6">
+          <div className="w-full max-w-2xl space-y-6">
+            {/* Skeleton Profile Card */}
+            <Card className="shadow-lg bg-card">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <Skeleton className="w-20 h-20 rounded-full" />
+                    <div>
+                      <Skeleton className="h-6 w-48 mb-2" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-10 w-28" />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                  <div className="space-y-4">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-10 w-full" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Skeleton Account Information Card */}
+            <Card className="bg-card">
+              <CardHeader>
+                <Skeleton className="h-6 w-48" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-1/2 mb-2" />
+                <Skeleton className="h-4 w-1/3" />
+              </CardContent>
+            </Card>
+          </div>
+        </main>
       </div>
     )
   }

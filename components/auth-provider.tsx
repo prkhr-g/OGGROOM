@@ -16,9 +16,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
-  if (context === undefined) {
-    // Return a default value or handle the case where the context is not available
-    return { user: null, loading: true };
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider")
   }
   return context
 }

@@ -27,6 +27,7 @@ import { getAllData, getCustomerProfile, getNearbyShops, getAvailableShops } fro
 import { getUpcomingBookings, getPreviousBookings } from "@/lib/booking-actions"
 import { useAuth } from "@/components/auth-provider"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface Shop {
   id: string
@@ -231,9 +232,84 @@ export default function CustomerHomeScreen() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col min-h-screen bg-background items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-2 text-muted-foreground">Loading data...</p>
+      <div className="flex flex-col min-h-screen bg-background">
+        {/* Skeleton Header */}
+        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          <div className="container flex h-16 items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <Skeleton className="h-6 w-24" />
+            </div>
+            <Skeleton className="h-9 w-9 rounded-full" />
+          </div>
+        </header>
+
+        <main className="flex-1 container py-6 space-y-8">
+          {/* Skeleton Search Section */}
+          <section>
+            <Skeleton className="h-12 w-full rounded-md" />
+          </section>
+
+          {/* Skeleton Appointments Section */}
+          <section>
+            <Skeleton className="h-8 w-48 mb-4" />
+            <div className="grid w-full grid-cols-2 bg-muted rounded-md mb-6">
+              <Skeleton className="h-10 w-full rounded-l-md" />
+              <Skeleton className="h-10 w-full rounded-r-md" />
+            </div>
+            <div className="space-y-4">
+              {[1, 2].map((i) => (
+                <Card key={i} className="bg-card shadow-sm">
+                  <CardContent className="p-4 flex items-start gap-4">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                      <div className="flex gap-2">
+                        <Skeleton className="h-3 w-1/4" />
+                        <Skeleton className="h-3 w-1/4" />
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <Skeleton className="h-6 w-16" />
+                      <Skeleton className="h-8 w-20" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+
+          {/* Skeleton Nearby Shops Section */}
+          <section>
+            <Skeleton className="h-8 w-64 mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[1, 2].map((i) => (
+                <Card key={i} className="bg-card shadow-sm">
+                  <CardContent className="p-4 flex items-start gap-4">
+                    <Skeleton className="h-20 w-20 rounded-lg" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                      <div className="flex gap-2">
+                        <Skeleton className="h-3 w-1/4" />
+                        <Skeleton className="h-3 w-1/4" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-10 w-24" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+        </main>
+
+        {/* Skeleton Footer */}
+        <footer className="py-8 bg-muted text-muted-foreground border-t border-border">
+          <div className="container text-center">
+            <Skeleton className="h-4 w-1/3 mx-auto" />
+          </div>
+        </footer>
       </div>
     )
   }
