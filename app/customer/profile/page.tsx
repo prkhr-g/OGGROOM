@@ -9,11 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Mail, Phone, MapPin, Calendar, Edit, Save, X, Loader2, Scissors } from "lucide-react"
-import { AddressAutocompleteInput } from "@/components/ui/address-autocomplete-input"
+import { GoogleMapsProvider } from "@/components/google-maps-loader"
+import dynamic from "next/dynamic"
 import Link from "next/link"
 import Image from "next/image"
-import { useAuth } from "@/components/auth-provider"
+import { AuthProvider, useAuth } from "@/components/auth-provider"
 import { updateCustomerProfile, getCustomerProfile } from "@/lib/profile-actions"
+
+const AddressAutocompleteInput = dynamic(() => import('@/components/ui/address-autocomplete-input').then(mod => mod.AddressAutocompleteInput), { ssr: false, loading: () => <Loader2 className='h-8 w-8 animate-spin text-primary' /> });
 
 interface CustomerProfile {
   id: string
@@ -28,7 +31,7 @@ interface CustomerProfile {
   created_at: string
 }
 
-export default function CustomerProfilePage() {
+function CustomerProfilePageContent() {
   const { user } = useAuth()
   const [profile, setProfile] = useState<CustomerProfile | null>(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -300,13 +303,15 @@ export default function CustomerProfilePage() {
                   </div>
 
                   <div>
-                    <AddressAutocompleteInput
-                      id="location"
-                      label="Location"
-                      value={editData.location}
-                      onChange={(address, lat, lng) => setEditData({ ...editData, location: address, latitude: lat, longitude: lng })}
-                      disabled={!isEditing}
-                    />
+                    <GoogleMapsProvider>
+                      <AddressAutocompleteInput
+                        id="location"
+                        label="Location"
+                        value={editData.location}
+                        onChange={(address, lat, lng) => setEditData({ ...editData, location: address, latitude: lat, longitude: lng })}
+                        disabled={!isEditing}
+                      />
+                    </GoogleMapsProvider>
                   </div>
                 </div>
               </div>
@@ -350,5 +355,13 @@ export default function CustomerProfilePage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function CustomerProfilePageWithAuth() {
+  return (
+    <AuthProvider>
+      <CustomerProfilePageContent />
+    </AuthProvider>
   )
 }

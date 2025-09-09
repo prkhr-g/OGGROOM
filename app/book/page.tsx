@@ -14,7 +14,7 @@ import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 
 import { getShopDetailsForCustomer, getAvailableTimeSlots, createBooking } from "@/lib/profile-actions"
-import { useAuth } from "@/components/auth-provider"
+import { AuthProvider, useAuth } from "@/components/auth-provider"
 
 interface Service {
   id: number
@@ -201,7 +201,7 @@ function BookingPageContent() {
             <p className="text-sm text-gray-600 text-center">
               A confirmation email has been sent to {customerInfo.email}
             </p>
-            <Link href="/" className="block">
+            <Link href="/">
               <Button className="w-full">Back to Home</Button>
             </Link>
           </CardContent>

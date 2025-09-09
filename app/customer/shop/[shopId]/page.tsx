@@ -6,9 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Mail, Phone, MapPin, Clock, Loader2, Star, DollarSign } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { GoogleMapDisplay } from '@/components/ui/google-map-display'
+import { GoogleMapsProvider } from "@/components/google-maps-loader"
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { getShopDetailsForCustomer } from '@/lib/profile-actions'
+
+const GoogleMapDisplay = dynamic(() => import('@/components/ui/google-map-display').then(mod => mod.GoogleMapDisplay), { ssr: false, loading: () => <Loader2 className='h-8 w-8 animate-spin text-primary' /> });
 
 interface Shop {
   id: string
@@ -161,11 +164,13 @@ export default function ShopDetailsPage() {
           <Card className='shadow-lg bg-card'>
             <CardHeader><CardTitle>Location</CardTitle></CardHeader>
             <CardContent>
-              <GoogleMapDisplay
-                latitude={shop.shop_latitude}
-                longitude={shop.shop_longitude}
-                shopName={shop.name}
-              />
+              <GoogleMapsProvider>
+                <GoogleMapDisplay
+                  latitude={shop.shop_latitude}
+                  longitude={shop.shop_longitude}
+                  shopName={shop.name}
+                />
+              </GoogleMapsProvider>
             </CardContent>
           </Card>
         )}

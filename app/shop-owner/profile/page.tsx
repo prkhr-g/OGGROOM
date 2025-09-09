@@ -12,12 +12,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Store, Mail, Phone, MapPin, Calendar, Edit, Save, X, Loader2, Clock, Settings } from "lucide-react"
-import { AddressAutocompleteInput } from "@/components/ui/address-autocomplete-input"
+import { GoogleMapsProvider } from "@/components/google-maps-loader"
+import dynamic from "next/dynamic"
 import Link from "next/link"
 import Image from "next/image"
-import { useAuth } from "@/components/auth-provider"
+import { AuthProvider, useAuth } from "@/components/auth-provider"
 import { updateShopOwnerProfile, getShopOwnerProfile, updateShopStatus, createShopOwnerProfile } from "@/lib/profile-actions"
 
+const AddressAutocompleteInput = dynamic(() => import('@/components/ui/address-autocomplete-input').then(mod => mod.AddressAutocompleteInput), { ssr: false, loading: () => <Loader2 className='h-8 w-8 animate-spin text-primary' /> });
 
 interface ShopOwnerProfile {
   id: string
@@ -40,7 +42,7 @@ interface ShopOwnerProfile {
   }
 }
 
-export default function ShopOwnerProfilePage() {
+function ShopOwnerProfilePageContent() {
   const { user } = useAuth()
   const router = useRouter()
   const [profile, setProfile] = useState<ShopOwnerProfile | null>(null)
@@ -310,13 +312,15 @@ export default function ShopOwnerProfilePage() {
                       <Input id="shop-phone" type="tel" value={editData.shopPhone} onChange={(e) => setEditData({ ...editData, shopPhone: e.target.value })} disabled={!isEditing} />
                     </div>
                     <div>
-                      <AddressAutocompleteInput
-                        id="shop-address"
-                        label="Shop Address"
-                        value={editData.shopAddress}
-                        onChange={(address, lat, lng) => setEditData({ ...editData, shopAddress: address, shopLatitude: lat, shopLongitude: lng })}
-                        disabled={!isEditing}
-                      />
+                      <GoogleMapsProvider>
+                        <AddressAutocompleteInput
+                          id="shop-address"
+                          label="Shop Address"
+                          value={editData.shopAddress}
+                          onChange={(address, lat, lng) => setEditData({ ...editData, shopAddress: address, shopLatitude: lat, shopLongitude: lng })}
+                          disabled={!isEditing}
+                        />
+                      </GoogleMapsProvider>
                     </div>
                   </div>
                 </div>
@@ -372,5 +376,13 @@ export default function ShopOwnerProfilePage() {
         </div>
       </main>
     </div>
+  )
+}
+
+export default function ShopOwnerProfilePageWithAuth() {
+  return (
+    <AuthProvider>
+      <ShopOwnerProfilePageContent />
+    </AuthProvider>
   )
 }

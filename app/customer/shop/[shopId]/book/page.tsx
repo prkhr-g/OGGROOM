@@ -12,6 +12,7 @@ import { ArrowLeft, Clock, DollarSign, Star, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams, useRouter, useParams } from "next/navigation"
 import { getShopDetailsForCustomer, getAvailableTimeSlots } from "@/lib/profile-actions"
+import { AuthProvider } from "@/components/auth-provider"
 
 interface Shop {
   id: string
@@ -44,7 +45,7 @@ interface Barber {
   email: string
 }
 
-export default function BookAppointmentScreen() {
+function BookAppointmentScreenContent() {
   const params = useParams()
   const shopId = params.shopId as string
   const searchParams = useSearchParams()
@@ -432,5 +433,13 @@ export default function BookAppointmentScreen() {
         )}
       </main>
     </div>
+  )
+}
+
+export default function BookAppointmentScreen() {
+  return (
+    <AuthProvider>
+      <BookAppointmentScreenContent />
+    </AuthProvider>
   )
 }

@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AuthProvider } from '@/components/auth-provider';
 
 interface Review {
   id: number;
@@ -18,7 +19,7 @@ interface Booking {
   created_at: string;
 }
 
-export default function AnalyticsPage() {
+function AnalyticsPageContent() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -138,4 +139,12 @@ export default function AnalyticsPage() {
       </div>
     </div>
   );
+}
+
+export default function AnalyticsPage() {
+  return (
+    <AuthProvider>
+      <AnalyticsPageContent />
+    </AuthProvider>
+  )
 }

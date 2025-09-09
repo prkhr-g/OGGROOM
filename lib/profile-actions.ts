@@ -506,9 +506,7 @@ export async function getAvailableTimeSlots(
 export async function getAvailableShops() {
   const supabase = createServerClient()
   try {
-    const { data, error } = await supabase
-      .from("shops")
-      .select("id, name, type, address, email, phone, is_open, opening_time, closing_time")
+    const { data, error } = await supabase.rpc('get_all_shops_with_average_rating');
 
     if (error) {
       return { error: "Failed to fetch available shops: " + error.message }
@@ -557,7 +555,8 @@ export async function getShopOwnerDashboard(shopId: string) {
         *,
         bookings:bookings(*, customer:customers(name, phone, email)),
         services:services(*),
-        barbers:barbers(*)
+        barbers:barbers(*),
+        reviews:reviews(*)
       `,
       )
       .eq("id", shopId)

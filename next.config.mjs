@@ -11,4 +11,10 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+import nextBundleAnalyzer from '@next/bundle-analyzer'
+
+const withBundleAnalyzer = nextBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+})
+
+export default withBundleAnalyzer(nextConfig)

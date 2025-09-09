@@ -497,7 +497,7 @@ export default function CustomerHomeScreen() {
                           <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
                             <span className="flex items-center gap-1">
                               <Star className="h-3 w-3 fill-yellow-400 text-yellow-500" />
-                              {shop.average_rating ? shop.average_rating.toFixed(1) : 'N/A'}
+                              {shop.average_rating?.toFixed(1) ?? 'N/A'}
                             </span>
                             {shop.distance_meters !== undefined && (
                               <span className="flex items-center gap-1">

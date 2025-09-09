@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Clock, User, Banknote, Phone, Mail, Info, ArrowLeft } from 'lucide-react'
-import { useAuth } from '@/components/auth-provider'
+import { AuthProvider, useAuth } from '@/components/auth-provider'
 import { getShopOwnerProfile, getShopBookings, getShopOwnerDashboard } from '@/lib/profile-actions'
 import { format, isFuture, parseISO } from 'date-fns'
 
@@ -26,7 +26,7 @@ interface Booking {
   services: string;
 }
 
-export default function ShopSchedulePage() {
+function ShopSchedulePageContent() {
   const { user } = useAuth();
   const router = useRouter();
   const [shopId, setShopId] = useState<string | null>(null);
@@ -135,4 +135,12 @@ export default function ShopSchedulePage() {
       </Card>
     </div>
   );
+}
+
+export default function ShopSchedulePage() {
+  return (
+    <AuthProvider>
+      <ShopSchedulePageContent />
+    </AuthProvider>
+  )
 }

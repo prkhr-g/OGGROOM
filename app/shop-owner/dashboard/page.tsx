@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Calendar, Users, Banknote, Clock, Star, Settings, Plus, Edit, Trash2, Eye, CheckCircle, XCircle, Phone, TrendingUp, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useAuth } from '@/components/auth-provider'
+import { AuthProvider, useAuth } from '@/components/auth-provider'
 import { getShopOwnerProfile, getShopOwnerDashboard, addService as addServiceAction, addBarber as addBarberAction, deleteService as deleteServiceAction, deleteBarber as deleteBarberAction, updateService as updateServiceAction, updateBarber as updateBarberAction } from '@/lib/profile-actions'
 import { updateBookingStatusInDb } from '@/lib/booking-actions'
 
@@ -24,7 +24,7 @@ interface Barber { id: number; name: string; specialties: string[]; experience: 
 interface ShopOwnerProfile { id: string; name: string; shop: { id: string; name: string; }; }
 interface Review { id: number; rating: number; feedback: string; created_at: string; }
 
-export default function ShopOwnerDashboard() {
+function ShopOwnerDashboardContent() {
   const { user } = useAuth()
   const router = useRouter()
   const [profile, setProfile] = useState<ShopOwnerProfile | null>(null)
@@ -111,14 +111,14 @@ export default function ShopOwnerDashboard() {
   }, [user, router])
 
   const averageRating = reviews.length > 0
-    ? (reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length).toFixed(1)
-    : 'N/A';
+? (reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length).toFixed(1)
+: '0.0';
 
   const stats = [
     { title: "Today's Revenue", value: `₹${todayBookings.reduce((acc, b) => acc + b.total_price, 0)}`, icon: Banknote, color: 'text-green-500' },
     { title: "Today's Bookings", value: todayBookings.length.toString(), icon: Calendar, color: 'text-blue-500' },
     { title: 'Active Customers', value: '156', icon: Users, color: 'text-purple-500' },
-    { title: 'Average Rating', value: averageRating, icon: Star, color: 'text-yellow-500' },
+    
   ]
 
   const handleAddService = async (serviceData: Omit<Service, 'id'>) => {
@@ -234,7 +234,7 @@ export default function ShopOwnerDashboard() {
 
       <main className='max-w-6xl mx-auto px-4 py-6 space-y-6'>
         {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {stats.map((stat, index) => (
             <Card key={index} className="bg-card">
               <CardContent className="p-4">
@@ -513,3 +513,12 @@ export default function ShopOwnerDashboard() {
     </div>
   )
 }
+
+export default function ShopOwnerDashboard() {
+  return (
+    <AuthProvider>
+      <ShopOwnerDashboardContent />
+    </AuthProvider>
+  )
+}
+
