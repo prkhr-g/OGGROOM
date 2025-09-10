@@ -40,7 +40,10 @@ export async function signUpCustomer(data: CustomerSignupData) {
     })
 
     if (authError) {
-      return { error: authError.message }
+      if (authError.message.includes("User already registered") || authError.message.includes("User already exists")) {
+        return { error: "Account already exists, please login with your credentials." };
+      }
+      return { error: authError.message };
     }
 
     // Return success - user will need to verify email before profile is created
@@ -74,7 +77,10 @@ export async function signUpShopOwner(data: ShopOwnerSignupData) {
     })
 
     if (authError) {
-      return { error: authError.message }
+      if (authError.message.includes("User already registered") || authError.message.includes("User already exists")) {
+        return { error: "Account already exists, please login with your credentials." };
+      }
+      return { error: authError.message };
     }
 
     // Return success - user will need to verify email before profile is created
@@ -124,7 +130,10 @@ export async function resendOTP(email: string) {
     })
 
     if (error) {
-      return { error: error.message }
+      if (error.message.includes("User already confirmed") || error.message.includes("Email already confirmed")) {
+        return { error: "Account already exists, please login with your credentials." };
+      }
+      return { error: error.message };
     }
 
     return { success: true }

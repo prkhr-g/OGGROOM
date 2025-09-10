@@ -24,6 +24,9 @@ export default function VerifyOTPScreen() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [countdown, setCountdown] = useState(0)
+  const [showAccountExistsMessage, setShowAccountExistsMessage] = useState(false);
+  
+  
 
   // Countdown timer for resend button
   useEffect(() => {
@@ -69,24 +72,38 @@ export default function VerifyOTPScreen() {
 
   const handleResendOTP = async () => {
     setIsResending(true)
-    setError("")
-    setSuccess("")
+    setError("") // Clear previous errors
+    setSuccess("") // Clear previous success messages
+    setShowAccountExistsMessage(false); // Clear previous "account exists" message
 
     try {
       const result = await resendOTP(email)
 
+      // Always show the "Account already exists" message if the button is clicked
+      // This overrides any other success message
+      setShowAccountExistsMessage(true);
+
       if (result.error) {
-        setError(result.error)
+        if (result.type === "account_exists") {
+          // The "Account already exists" message is already set to be shown.
+          // Do not set a generic error message.
+        } else {
+          // It's a different error, so display it.
+          setError(result.error);
+          setShowAccountExistsMessage(false); // Don't show "account exists" if there's another error
+        }
       } else {
-        setSuccess("Verification code sent! Please check your email.")
-        setCountdown(60) // 60 second countdown
+        // If resendOTP was successful, we still don't show the "Verification code sent!" message
+        // because the user explicitly requested not to, and we are showing "Account already exists".
+        // No action needed here for success message.
       }
     } catch (error) {
-      setError("Failed to resend verification code")
+      setError("Failed to resend verification code");
+      setShowAccountExistsMessage(false); // Don't show "account exists" if there's a catch error
     } finally {
-      setIsResending(false)
+      setIsResending(false);
     }
-  }
+  };
 
   if (!email) {
     return (
@@ -121,19 +138,26 @@ export default function VerifyOTPScreen() {
               ) : (
                 <Mail className="h-8 w-8 text-blue-600" />
               )}
+              
             </div>
+
             <CardTitle className="text-2xl">Verify Your Email</CardTitle>
             <CardDescription>
               We've sent a 6-digit verification code to <br />
               <strong>{email}</strong>
             </CardDescription>
           </CardHeader>
+              {showAccountExistsMessage && (
+                <div className="mb-4 p-3 mx-5 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
+                  Account already exists, please login with your credentials.
+                </div>
+              )}
+          {/* <CardContent> */}
+           <CardContent>
+              {error && <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>}
 
-          <CardContent>
-            {error && <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>}
-            {success && (
-              <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">{success}</div>
-            )}
+
+              {/* <form onSubmit={handleVerifyOTP} className="space-y-4"></form> */}
 
             <form onSubmit={handleVerifyOTP} className="space-y-4">
               <div className="space-y-2">
