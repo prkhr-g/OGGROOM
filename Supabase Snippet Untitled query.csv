@@ -1,0 +1,14 @@
+column_name,data_type
+id,uuid
+name,character varying
+type,character varying
+email,character varying
+phone,character varying
+address,text
+is_open,boolean
+opening_time,time without time zone
+closing_time,time without time zone
+created_at,timestamp with time zone
+updated_at,timestamp with time zone
+shop_latitude,double precision
+shop_longitude,double precision
