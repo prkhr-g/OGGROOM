@@ -249,8 +249,8 @@ function ShopOwnerProfilePageContent() {
                 </div>
                 {!isEditing && profile && (
                   <Button className="ml-1" onClick={() => setIsEditing(true)} variant="outline">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
+                    <Edit className="h-4 w-4" />
+                    
                   </Button>
                 )}
               </div>
