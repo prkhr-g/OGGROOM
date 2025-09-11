@@ -125,7 +125,7 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Navigation Bar */}
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6 md:px-8 lg:px-12 ">
         <div className="container  flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Image src="/logo.png" alt="OGGroom Logo" width={40} height={40} />
@@ -180,7 +180,7 @@ export default function LandingPage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative py-16 md:py-24 lg:py-32 bg-background overflow-hidden">
+        <section className="relative py-16 md:py-24 lg:py-32 bg-background overflow-hidden px-4 sm:px-6 md:px-8 lg:px-12">
           <div className="absolute -top-20 -left-20 w-72 h-72 bg-primary/10 rounded-full opacity-30 animate-pulse"></div>
           <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-primary/20 rounded-full opacity-20 animate-pulse animation-delay-2000"></div>
           <div className="container relative z-10">
@@ -229,7 +229,7 @@ export default function LandingPage() {
         </section>
 
         {/* Smarter Booking / Features Section */}
-        <section id="features" className="py-16 md:py-24 bg-card">
+        <section id="features" className="py-16 md:py-24 bg-card px-4 sm:px-6 md:px-8 lg:px-12">
           <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Smarter Booking. Better Experience.</h2>
@@ -257,7 +257,7 @@ export default function LandingPage() {
         </section>
 
         {/* How OGGroom Works Section */}
-        <section id="how-it-works" className="py-16 md:py-24 bg-background">
+        <section id="how-it-works" className="py-16 md:py-24 bg-background px-4 sm:px-6 md:px-8 lg:px-12">
           <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">How OGGroom Works</h2>
@@ -287,7 +287,7 @@ export default function LandingPage() {
         </section>
 
         {/* Testimonials Section */}
-        <section id="testimonials" className="py-16 md:py-24 bg-card">
+        <section id="testimonials" className="py-16 md:py-24 bg-card px-4 sm:px-6 md:px-8 lg:px-12">
           <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">What People Are Saying</h2>
@@ -324,7 +324,7 @@ export default function LandingPage() {
         </section>
 
         {/* Call to Action Section */}
-        <section className="py-16 md:py-24 bg-secondary text-secondary-foreground">
+        <section className="py-16 md:py-24 bg-secondary text-secondary-foreground px-4 sm:px-6 md:px-8 lg:px-12">
           <div className="container text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to transform your booking experience?</h2>
             <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
@@ -356,7 +356,7 @@ export default function LandingPage() {
       </main>
 
       {/* Footer Section */}
-      <footer className="py-12 bg-background border-t border-border">
+      <footer className="py-12 bg-background border-t border-border px-4 sm:px-6 md:px-8 lg:px-12">
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             <div>

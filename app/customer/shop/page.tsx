@@ -147,7 +147,7 @@ export default function ShopBrowserPage() {
                 <Link href="/customer/home" passHref>
                     <Button variant="ghost" size="sm">
                         <ArrowLeft className="h-4 w-4 mr-2" />
-                        Back to Home
+                        Back
                     </Button>
                 </Link>
                 <h1 className='text-xl font-semibold text-foreground'>Browse Shops</h1>

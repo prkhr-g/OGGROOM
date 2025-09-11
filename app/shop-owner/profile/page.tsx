@@ -201,7 +201,7 @@ function ShopOwnerProfilePageContent() {
   // The form is always displayed, but its behavior (create/edit) depends on `profile`
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="px-4 sm:px-6 md:px-8 lg:px-12 sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
             <Settings className="h-6 w-6 text-primary" />
@@ -223,7 +223,7 @@ function ShopOwnerProfilePageContent() {
         </div>
       </header>
 
-      <main className="flex flex-col items-center py-6">
+      <main className="px-4 sm:px-6 md:px-8 lg:px-12 flex flex-col items-center py-6">
         <div className="w-full max-w-4xl space-y-6">
           {error && <div className="p-3 bg-destructive border border-destructive text-destructive-foreground rounded">{error}</div>}
           {success && <div className="p-3 bg-accent border-accent text-accent-foreground rounded">{success}</div>}
@@ -248,9 +248,9 @@ function ShopOwnerProfilePageContent() {
                   </div>
                 </div>
                 {!isEditing && profile && (
-                  <Button onClick={() => setIsEditing(true)} variant="outline">
+                  <Button className="ml-1" onClick={() => setIsEditing(true)} variant="outline">
                     <Edit className="h-4 w-4 mr-2" />
-                    Edit Profile
+                    Edit
                   </Button>
                 )}
               </div>

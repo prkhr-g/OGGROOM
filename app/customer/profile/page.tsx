@@ -133,7 +133,7 @@ function CustomerProfilePageContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center py-6">
+      <div className="px-4 sm:px-6 md:px-8 lg:px-12 min-h-screen bg-background flex flex-col items-center py-6">
         {/* Skeleton Header */}
         <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container flex h-16 items-center justify-between">
@@ -145,10 +145,10 @@ function CustomerProfilePageContent() {
           </div>
         </header>
 
-        <main className="flex flex-col items-center py-6">
-          <div className="w-full max-w-2xl space-y-6">
+        <main className=" px-4 sm:px-6 md:px-8 lg:px-12 flex flex-col items-center py-6">
+          <div className="px-4 sm:px-6 md:px-8 lg:px-12 w-full max-w-2xl space-y-6">
             {/* Skeleton Profile Card */}
-            <Card className="shadow-lg bg-card">
+            <Card className="px-4 sm:px-6 md:px-8 lg:px-12 shadow-lg bg-card">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -217,13 +217,13 @@ function CustomerProfilePageContent() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="px-4 sm:px-6 md:px-8 lg:px-12 sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/customer/home">
               <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Home
+                Back
               </Button>
             </Link>
             {user?.is_shop_owner && ( // Assuming user.is_shop_owner exists
@@ -233,7 +233,7 @@ function CustomerProfilePageContent() {
                 </Button>
               </Link>
             )}
-            <div className="flex items-center gap-2">
+            <div className="ml-2 flex items-center gap-2">
               <Image src="/logo.png" alt="OGGroom Logo" width={30} height={30} />
               <span className="text-xl font-bold text-foreground">My Profile</span>
             </div>
@@ -245,7 +245,7 @@ function CustomerProfilePageContent() {
         </div>
       </header>
 
-      <main className="flex flex-col items-center py-6">
+      <main className="px-4 sm:px-6 md:px-8 lg:px-12 flex flex-col items-center py-6">
         <div className="w-full max-w-2xl space-y-6">
           {/* Profile Card */}
           <Card className="shadow-lg bg-card">
@@ -265,9 +265,9 @@ function CustomerProfilePageContent() {
                   </div>
                 </div>
                 {!isEditing && (
-                  <Button onClick={() => setIsEditing(true)} variant="outline">
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit Profile
+                  <Button className="mb-6 px-3" onClick={() => setIsEditing(true)} variant="outline">
+                    <Edit className="h-4 w-4" />
+                    
                   </Button>
                 )}
               </div>

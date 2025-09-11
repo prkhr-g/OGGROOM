@@ -234,7 +234,7 @@ export default function CustomerHomeScreen() {
     return (
       <div className="flex flex-col min-h-screen bg-background">
         {/* Skeleton Header */}
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6 md:px-8 lg:px-12">
           <div className="container flex h-16 items-center justify-between">
             <div className="flex items-center gap-2">
               <Skeleton className="h-10 w-10 rounded-full" />
@@ -244,7 +244,7 @@ export default function CustomerHomeScreen() {
           </div>
         </header>
 
-        <main className="flex-1 container py-6 space-y-8">
+        <main className="flex-1 container py-6 space-y-8 px-4 sm:px-6 md:px-8 lg:px-12">
           {/* Skeleton Search Section */}
           <section>
             <Skeleton className="h-12 w-full rounded-md" />
@@ -305,7 +305,7 @@ export default function CustomerHomeScreen() {
         </main>
 
         {/* Skeleton Footer */}
-        <footer className="py-8 bg-muted text-muted-foreground border-t border-border">
+        <footer className="py-8 bg-muted text-muted-foreground border-t border-border px-4 sm:px-6 md:px-8 lg:px-12">
           <div className="container text-center">
             <Skeleton className="h-4 w-1/3 mx-auto" />
           </div>
@@ -331,7 +331,7 @@ export default function CustomerHomeScreen() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header - Styled like Hero Page Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="px-4 sm:px-6 md:px-8 lg:px-12 sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <Image src="/logo.png" alt="OGGroom Logo" width={40} height={40} />
@@ -349,7 +349,7 @@ export default function CustomerHomeScreen() {
         </div>
       </header>
 
-      <main className="flex-1 container py-6 space-y-8">
+      <main className="px-4 sm:px-6 md:px-8 lg:px-12 flex-1 container py-6 space-y-8">
         {/* Search Section - Kept for functionality */}
         <section>
           <div className="flex gap-4">
