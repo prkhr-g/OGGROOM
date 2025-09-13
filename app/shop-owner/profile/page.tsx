@@ -18,6 +18,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { AuthProvider, useAuth } from "@/components/auth-provider"
 import { updateShopOwnerProfile, getShopOwnerProfile, updateShopStatus, createShopOwnerProfile } from "@/lib/profile-actions"
+import { VendorIdForm } from "@/components/ui/vendor-id-form"
 
 const AddressAutocompleteInput = dynamic(() => import('@/components/ui/address-autocomplete-input').then(mod => mod.AddressAutocompleteInput), { ssr: false, loading: () => <Loader2 className='h-8 w-8 animate-spin text-primary' /> });
 
@@ -27,6 +28,7 @@ interface ShopOwnerProfile {
   email: string
   phone: string
   created_at: string
+  vendor_id: string | null
   shop: {
     id: string
     name: string
@@ -50,6 +52,7 @@ function ShopOwnerProfilePageContent() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+  const [isVendorModalOpen, setIsVendorModalOpen] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
 
@@ -82,6 +85,7 @@ function ShopOwnerProfilePageContent() {
       if (result.error) {
         setError(result.error)
       } else if (result.profile) {
+        console.log('Profile data:', result.profile);
         setProfile(result.profile)
         setEditData({
           ownerName: result.profile.name,
@@ -190,6 +194,11 @@ function ShopOwnerProfilePageContent() {
     setError("")
   }
 
+  const handleVendorIdSuccess = (vendorId: string) => {
+    setSuccess(`Vendor ID ${vendorId} generated successfully!`);
+    loadProfile();
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -275,6 +284,17 @@ function ShopOwnerProfilePageContent() {
                       <Label htmlFor="owner-phone">Owner Phone</Label>
                       <Input id="owner-phone" type="tel" value={editData.ownerPhone} onChange={(e) => setEditData({ ...editData, ownerPhone: e.target.value })} disabled={!isEditing} />
                     </div>
+                    {profile && (
+                    <div>
+                      <Label htmlFor="vendor-id">Vendor ID</Label>
+                      <div className="flex items-center gap-2">
+                        <Input id="vendor-id" value={profile.vendor_id || 'Not Generated'} disabled />
+                        {!profile.vendor_id && (
+                          <Button onClick={() => setIsVendorModalOpen(true)}>Generate ID</Button>
+                        )}
+                      </div>
+                    </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -374,6 +394,15 @@ function ShopOwnerProfilePageContent() {
               </Card>
           )}
         </div>
+        {profile && (
+          <VendorIdForm
+            isOpen={isVendorModalOpen}
+            onClose={() => setIsVendorModalOpen(false)}
+            ownerName={profile.name}
+            ownerEmail={profile.email}
+            onSuccess={handleVendorIdSuccess}
+          />
+        )}
       </main>
     </div>
   )

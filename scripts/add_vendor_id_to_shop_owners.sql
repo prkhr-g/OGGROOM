@@ -1,0 +1,1 @@
+ALTER TABLE shop_owners ADD COLUMN vendor_id TEXT;

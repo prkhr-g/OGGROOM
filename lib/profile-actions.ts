@@ -84,7 +84,12 @@ export async function getShopOwnerProfile(userId: string) {
     const { data, error } = await supabase
       .from("shop_owners")
       .select(`
-        *,
+        id,
+        name,
+        email,
+        phone,
+        created_at,
+        vendor_id,
         shop:shops(*)
       `)
       .eq("id", userId)

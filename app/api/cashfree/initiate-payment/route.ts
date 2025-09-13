@@ -1,23 +1,40 @@
 import { NextResponse } from 'next/server';
+import { createServerClient } from '@/lib/supabase-server';
 
 export async function POST(request: Request) {
   try {
     const { orderDetails } = await request.json();
+    const { orderId, amount, currency, customerDetails, shopId } = orderDetails;
 
-    // In a real application, you would:
-    // 1. Validate orderDetails
-    // 2. Call Cashfree API to create an order and get a payment link
-    //    (e.g., using Cashfree SDK or direct HTTP request)
-    // 3. Handle Cashfree API response (success/failure)
+    const supabase = createServerClient();
+    const { data: shopData, error: shopError } = await supabase
+      .from('shops')
+      .select('vendor_id')
+      .eq('id', shopId)
+      .single();
 
-    const { orderId, amount, currency, customerDetails } = orderDetails;
+    if (shopError || !shopData) {
+      console.error('Error fetching shop data:', shopError);
+      return NextResponse.json({ success: false, error: 'Shop not found or error fetching shop details.' }, { status: 404 });
+    }
 
-    const requestBody = {
+    const vendorId = shopData.vendor_id;
+
+    let requestBody: any = {
       order_id: orderId,
       order_amount: amount,
       order_currency: currency,
       customer_details: customerDetails,
     };
+
+    if (vendorId) {
+      requestBody.split = [
+        {
+          vendor_id: vendorId,
+          amount: amount,
+        },
+      ];
+    }
 
     const cashfreeResponse = await fetch(`${process.env.CASHFREE_API_URL}/pg/orders`, {
       method: 'POST',
@@ -25,6 +42,7 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
         'x-client-id': process.env.CASHFREE_CLIENT_ID as string,
         'x-client-secret': process.env.CASHFREE_CLIENT_SECRET as string,
+        'x-api-version': '2022-09-01',
       },
       body: JSON.stringify(requestBody),
     });
