@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@/lib/supabase-server';
 
@@ -27,7 +26,7 @@ export async function POST(request: Request) {
       settlement_cycle_id: 1, // T+1 cycle
     };
 
-    const cashfreeResponse = await fetch(`https://sandbox.cashfree.com/easysplit/v1/vendors`, {
+    const cashfreeResponse = await fetch(`${process.env.CASHFREE_API_URL}/easysplit/v1/vendors`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -40,25 +39,12 @@ export async function POST(request: Request) {
     });
 
     if (!cashfreeResponse.ok) {
-      const errorText = await cashfreeResponse.text();
-      console.error('Cashfree API Error Response Text:', errorText);
-      try {
-          const errorData = JSON.parse(errorText);
-          console.error('Cashfree API Error:', errorData);
-          return NextResponse.json({ success: false, error: errorData }, { status: cashfreeResponse.status });
-      } catch (e) {
-          return NextResponse.json({ success: false, error: 'Failed to parse Cashfree error response.' }, { status: cashfreeResponse.status });
-      }
+      const errorData = await cashfreeResponse.json();
+      console.error('Cashfree API Error:', errorData);
+      return NextResponse.json({ success: false, error: errorData }, { status: cashfreeResponse.status });
     }
 
-    const responseText = await cashfreeResponse.text();
-    console.log('Cashfree API Success Response Text:', responseText);
-    let cashfreeData;
-    try {
-        cashfreeData = JSON.parse(responseText);
-    } catch (e) {
-        return NextResponse.json({ success: false, error: 'Failed to parse Cashfree success response.' }, { status: 500 });
-    }
+    const cashfreeData = await cashfreeResponse.json();
     const created_vendor_id = cashfreeData.vendor_id;
 
     // Update shop_owners table

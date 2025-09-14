@@ -85,7 +85,6 @@ function ShopOwnerProfilePageContent() {
       if (result.error) {
         setError(result.error)
       } else if (result.profile) {
-        console.log('Profile data:', result.profile);
         setProfile(result.profile)
         setEditData({
           ownerName: result.profile.name,
