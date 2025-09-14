@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -117,7 +118,7 @@ function ShopOwnerDashboardContent() {
   const stats = [
     { title: "Today's Revenue", value: `₹${todayBookings.reduce((acc, b) => acc + b.total_price, 0)}`, icon: Banknote, color: 'text-green-500' },
     { title: "Today's Bookings", value: todayBookings.length.toString(), icon: Calendar, color: 'text-blue-500' },
-    { title: 'Active Customers', value: '156', icon: Users, color: 'text-purple-500' },
+    { title: 'Active Customers', value: '00', icon: Users, color: 'text-purple-500' },
     
   ]
 
@@ -234,7 +235,12 @@ function ShopOwnerDashboardContent() {
 
       <main className='max-w-6xl mx-auto px-4 py-6 space-y-6'>
         {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1 }}
+        >
           {stats.map((stat, index) => (
             <Card key={index} className="bg-card">
               <CardContent className="p-4">
@@ -248,7 +254,7 @@ function ShopOwnerDashboardContent() {
               </CardContent>
             </Card>
           ))}
-        </div>
+        </motion.div>
 
         {/* Quick Actions */}
         <Card className="bg-card">

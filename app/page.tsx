@@ -1,3 +1,7 @@
+"use client";
+
+import { useRef } from 'react';
+import { motion, useScroll, useTransform, useInView } from 'framer-motion';
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import {
@@ -122,6 +126,81 @@ export default function LandingPage() {
     ],
   }
 
+  const heroRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
+  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "300%"]);
+  const buttonsY = useTransform(scrollYProgress, [0, 1], ["0%", "250%"]);
+
+  const featuresRef = useRef(null);
+  const isInView = useInView(featuresRef, { once: false, amount: 0.5 });
+
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+      },
+    },
+  };
+
+  const howItWorksRef = useRef(null);
+  const isHowItWorksInView = useInView(howItWorksRef, { once: false, amount: 0.5 });
+
+  const sideSlideContainerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const sideSlideItemVariants = {
+    hidden: { opacity: 0, x: -50 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.5,
+      },
+    },
+  };
+
+  const testimonialsRef = useRef(null);
+  const isTestimonialsInView = useInView(testimonialsRef, { once: false, amount: 0.1 });
+
+  const ctaRef = useRef(null);
+  const isCtaInView = useInView(ctaRef, { once: false, amount: 0.1 });
+
+  const footerRef = useRef(null);
+  const isFooterInView = useInView(footerRef, { once: false, amount: 0.1 });
+
+  const singleSectionVariant = {
+    hidden: { opacity: 0, y: 50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+      },
+    },
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Navigation Bar */}
@@ -180,52 +259,57 @@ export default function LandingPage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative py-16 md:py-24 lg:py-32 bg-background overflow-hidden px-4 sm:px-6 md:px-8 lg:px-12">
-          <div className="absolute -top-20 -left-20 w-72 h-72 bg-primary/10 rounded-full opacity-30 animate-pulse"></div>
-          <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-primary/20 rounded-full opacity-20 animate-pulse animation-delay-2000"></div>
-          <div className="container relative z-10">
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-              <div className="text-center md:text-left">
-                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground mb-6">
-                  Style shouldn't be a <span className="text-primary">waiting game</span>
-                </h1>
-                <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-xl mx-auto md:mx-0">
-                  Book your next salon appointment with ease. Smart scheduling, real-time availability, and seamless
-                  experience for both customers and shop owners.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                  <Link href="/auth?type=customer">
-                    <Button size="lg" className="w-full sm:w-auto">
-                      Get Started
-                    </Button>
-                  </Link>
-                  <Link href="#features">
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      className="w-full sm:w-auto"
-                    >
-                      Explore Features
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-              <div className="hidden md:block relative group">
-                <div className="aspect-[4/3] rounded-xl overflow-hidden shadow-2xl transform transition-transform duration-500 group-hover:scale-105">
-                  <Image
-                    src="/images/barbershop-hero.jpeg"
-                    alt="Barbershop Interior"
-                    width={600}
-                    height={450}
-                    className="object-cover w-full h-full"
-                    priority
-                  />
-                </div>
-                <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-primary/20 rounded-lg opacity-20 transform rotate-12 transition-transform duration-500 group-hover:rotate-6"></div>
-                <div className="absolute -top-8 -right-8 w-24 h-24 bg-muted rounded-full opacity-10 transform -rotate-6 transition-transform duration-500 group-hover:-rotate-3"></div>
-              </div>
-            </div>
-          </div>
+        <section ref={heroRef} className="relative h-screen flex items-center justify-center overflow-hidden">
+          <motion.div
+            className="absolute inset-0 z-0"
+            style={{
+              y: backgroundY,
+            }}
+          >
+            <Image
+              src="/hero.webp"
+              alt="Barbershop Interior"
+              layout="fill"
+              objectFit="cover"
+              className="opacity-30"
+              priority
+            />
+          </motion.div>
+          <motion.div 
+            className="relative z-10 text-center"
+            style={{
+              y: textY,
+            }}
+          >
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground mb-6">
+              Style shouldn't be a <span className="text-primary">waiting game</span>
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-xl mx-auto">
+              Book your next salon appointment with ease. Smart scheduling, real-time availability, and seamless
+              experience for both customers and shop owners.
+            </p>
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+              style={{
+                y: buttonsY,
+              }}
+            >
+              <Link href="/auth?type=customer">
+                <Button size="lg" className="w-full sm:w-auto">
+                  Get Started
+                </Button>
+              </Link>
+              <Link href="#features">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                >
+                  Explore Features
+                </Button>
+              </Link>
+            </motion.div>
+          </motion.div>
         </section>
 
         {/* Smarter Booking / Features Section */}
@@ -238,21 +322,29 @@ export default function LandingPage() {
                 both customers and shop owners.
               </p>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <motion.div
+              ref={featuresRef}
+              className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
+              variants={containerVariants}
+              initial="hidden"
+              animate={isInView ? "visible" : "hidden"}
+            >
               {features.map((feature) => (
-                <Card key={feature.title} className="text-center shadow-lg hover:shadow-xl transition-shadow bg-background">
-                  <CardHeader>
-                    <div className="mx-auto w-16 h-16 bg-accent rounded-full flex items-center justify-center mb-4">
-                      {feature.icon}
-                    </div>
-                    <CardTitle className="text-xl font-semibold text-foreground">{feature.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-muted-foreground text-sm">{feature.description}</p>
-                  </CardContent>
-                </Card>
+                <motion.div key={feature.title} variants={itemVariants}>
+                  <Card className="text-center shadow-lg hover:shadow-xl transition-shadow bg-background h-full">
+                    <CardHeader>
+                      <div className="mx-auto w-16 h-16 bg-accent rounded-full flex items-center justify-center mb-4">
+                        {feature.icon}
+                      </div>
+                      <CardTitle className="text-xl font-semibold text-foreground">{feature.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground text-sm">{feature.description}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </section>
 
@@ -265,19 +357,27 @@ export default function LandingPage() {
                 Our intelligent booking platform makes scheduling your appointments seamless and efficient.
               </p>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <motion.div
+              ref={howItWorksRef}
+              className="grid md:grid-cols-2 lg:grid-cols-4 gap-8"
+              variants={sideSlideContainerVariants}
+              initial="hidden"
+              animate={isHowItWorksInView ? "visible" : "hidden"}
+            >
               {howItWorksSteps.map((step) => (
-                <div key={step.number} className="bg-card p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-accent text-accent-foreground rounded-full flex items-center justify-center text-xl font-bold">
-                      {step.number}
+                <motion.div key={step.number} variants={sideSlideItemVariants}>
+                  <div className="bg-card p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow h-full">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="flex-shrink-0 w-12 h-12 bg-accent text-accent-foreground rounded-full flex items-center justify-center text-xl font-bold">
+                        {step.number}
+                      </div>
+                      <h3 className="text-xl font-semibold text-foreground">{step.title}</h3>
                     </div>
-                    <h3 className="text-xl font-semibold text-foreground">{step.title}</h3>
+                    <p className="text-muted-foreground text-sm">{step.description}</p>
                   </div>
-                  <p className="text-muted-foreground text-sm">{step.description}</p>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
             <div className="text-center mt-12">
               <Link href="/auth?type=customer">
                 <Button size="lg">Get Started Now</Button>
@@ -295,36 +395,50 @@ export default function LandingPage() {
                 Don't just take our word for it - see what our customers and shop owners have to say.
               </p>
             </div>
-            <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-8">
+            <motion.div
+              ref={testimonialsRef}
+              className="grid md:grid-cols-1 lg:grid-cols-3 gap-8"
+              variants={containerVariants}
+              initial="hidden"
+              animate={isTestimonialsInView ? "visible" : "hidden"}
+            >
               {testimonials.map((testimonial) => (
-                <Card key={testimonial.name} className="shadow-lg bg-background">
-                  <CardContent className="p-6">
-                    <MessageSquare className="w-8 h-8 text-primary mb-4 opacity-50" />
-                    <p className="text-muted-foreground mb-6 italic">"{testimonial.quote}"</p>
-                    <div className="flex items-center">
-                      <Avatar className="h-12 w-12 mr-4">
-                        <AvatarImage src={testimonial.avatar || "/placeholder.svg"} alt={testimonial.name} />
-                        <AvatarFallback>
-                          {testimonial.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-semibold text-foreground">{testimonial.name}</p>
-                        <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                <motion.div key={testimonial.name} variants={itemVariants}>
+                  <Card className="shadow-lg bg-background h-full">
+                    <CardContent className="p-6">
+                      <MessageSquare className="w-8 h-8 text-primary mb-4 opacity-50" />
+                      <p className="text-muted-foreground mb-6 italic">"{testimonial.quote}"</p>
+                      <div className="flex items-center">
+                        <Avatar className="h-12 w-12 mr-4">
+                          <AvatarImage src={testimonial.avatar || "/placeholder.svg"} alt={testimonial.name} />
+                          <AvatarFallback>
+                            {testimonial.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-semibold text-foreground">{testimonial.name}</p>
+                          <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                        </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           </div>
         </section>
 
         {/* Call to Action Section */}
-        <section className="py-16 md:py-24 bg-secondary text-secondary-foreground px-4 sm:px-6 md:px-8 lg:px-12">
+        <motion.section
+          ref={ctaRef}
+          className="py-16 md:py-24 bg-secondary text-secondary-foreground px-4 sm:px-6 md:px-8 lg:px-12"
+          variants={singleSectionVariant}
+          initial="hidden"
+          animate={isCtaInView ? "visible" : "hidden"}
+        >
           <div className="container text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to transform your booking experience?</h2>
             <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
@@ -352,11 +466,17 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
-        </section>
+        </motion.section>
       </main>
 
       {/* Footer Section */}
-      <footer className="py-12 bg-background border-t border-border px-4 sm:px-6 md:px-8 lg:px-12">
+      <motion.footer
+        ref={footerRef}
+        className="py-12 bg-background border-t border-border px-4 sm:px-6 md:px-8 lg:px-12"
+        variants={singleSectionVariant}
+        initial="hidden"
+        animate={isFooterInView ? "visible" : "hidden"}
+      >
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
             <div>
@@ -409,7 +529,7 @@ export default function LandingPage() {
             <p>&copy; {new Date().getFullYear()} OGGroom. All rights reserved.</p>
           </div>
         </div>
-      </footer>
+      </motion.footer>
     </div>
-  )
+  );
 }
