@@ -342,7 +342,7 @@ export default function CustomerHomeScreen() {
             <Link href="/customer/profile">
               <Avatar className="h-9 w-9 cursor-pointer hover:ring-2 hover:ring-primary transition-all">
                 <AvatarImage src="/placeholder.svg?height=36&width=36" alt="User Avatar" />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarFallback></AvatarFallback>
               </Avatar>
             </Link>
           </div>
@@ -458,7 +458,7 @@ export default function CustomerHomeScreen() {
                   ))}
                 </div>
               ) : (
-                <Card className="text-center py-10 bg-card">
+                <Card className="text-center py-10 bg-card py-3">
                   <CardContent>
                     <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                     <p className="text-muted-foreground">No upcoming appointments</p>
