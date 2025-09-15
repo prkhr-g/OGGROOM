@@ -1,8 +1,0 @@
-column_name,data_type
-id,bigint
-booking_id,bigint
-customer_id,uuid
-shop_id,uuid
-rating,numeric
-feedback,text
-created_at,timestamp with time zone
