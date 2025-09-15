@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -62,6 +62,10 @@ function BookAppointmentScreenContent() {
   const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([])
   const [bookedSlots, setBookedSlots] = useState<{ start: string; end: string }[]>([])
   const [isFetchingSlots, setIsFetchingSlots] = useState(false)
+
+  const barberRef = useRef<HTMLDivElement>(null)
+  const calendarRef = useRef<HTMLDivElement>(null)
+  const timeRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const fetchShopDetails = async () => {
@@ -131,6 +135,24 @@ function BookAppointmentScreenContent() {
     };
     fetchTimeSlots();
   }, [selectedBarberId, selectedDate, shopId, totalDuration]);
+
+  useEffect(() => {
+    if (selectedServiceIds.length > 0 && barberRef.current) {
+      barberRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [selectedServiceIds]);
+
+  useEffect(() => {
+    if (selectedBarberId && calendarRef.current) {
+      calendarRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [selectedBarberId]);
+
+  useEffect(() => {
+    if (selectedDate && timeRef.current) {
+      timeRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [selectedDate]);
 
   const formatDuration = (minutes: number) => {
     if (minutes < 60) return `${minutes} min`
@@ -270,7 +292,7 @@ function BookAppointmentScreenContent() {
 
         {/* Step 2: Select Barber (Enabled if services are selected) */}
         {selectedServiceIds.length > 0 && (
-          <Card className="shadow-lg bg-card">
+          <Card className="shadow-lg bg-card" ref={barberRef}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl text-foreground">
                 <span className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-base font-bold">
@@ -321,7 +343,7 @@ function BookAppointmentScreenContent() {
 
         {/* Step 3: Select Date & Time (Enabled if barber is selected) */}
         {selectedBarberId && (
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-2 gap-6" ref={calendarRef}>
             <Card className="shadow-lg bg-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-xl text-foreground">
@@ -344,7 +366,7 @@ function BookAppointmentScreenContent() {
               </CardContent>
             </Card>
 
-            <Card className="shadow-lg bg-card">
+            <Card className="shadow-lg bg-card" ref={timeRef}>
               <CardHeader>
                 <CardTitle className="text-xl text-foreground">Select Time</CardTitle>
                 <CardDescription>
