@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AnimatedTabsContent } from "@/components/ui/animated-tabs-content"
+
 import {
   Calendar,
   Clock,
@@ -404,7 +406,7 @@ export default function CustomerHomeScreen() {
                 Previous
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="upcoming" className="mt-6">
+            <AnimatedTabsContent value="upcoming">
               {upcomingBookings.length > 0 ? (
                 <div className="space-y-4">
                   {upcomingBookings.map((booking) => (
@@ -468,8 +470,8 @@ export default function CustomerHomeScreen() {
                   </CardContent>
                 </Card>
               )}
-            </TabsContent>
-            <TabsContent value="previous" className="mt-6">
+            </AnimatedTabsContent>
+            <AnimatedTabsContent value="previous">
               {selectedBookingForReview && <ReviewDialog
                 booking={selectedBookingForReview}
                 isOpen={isReviewDialogOpen}
@@ -528,7 +530,7 @@ export default function CustomerHomeScreen() {
                   </CardContent>
                 </Card>
               )}
-            </TabsContent>
+            </AnimatedTabsContent>
           </Tabs>
         </section>
 

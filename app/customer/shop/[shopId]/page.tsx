@@ -5,6 +5,10 @@ import { useParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Mail, Phone, MapPin, Clock, Loader2, Star, DollarSign } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AnimatedTabsContent } from "@/components/ui/animated-tabs-content"
+
+
 import { Badge } from '@/components/ui/badge'
 import { GoogleMapsProvider } from "@/components/google-maps-loader"
 import dynamic from 'next/dynamic'
@@ -159,6 +163,104 @@ export default function ShopDetailsPage() {
           </CardContent>
         </Card>
 
+        <Tabs defaultValue="services" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 bg-muted">
+            <TabsTrigger value="services">Services</TabsTrigger>
+            <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            <TabsTrigger value="policies">Policies</TabsTrigger>
+          </TabsList>
+          <AnimatedTabsContent value="services">
+            <Card className='shadow-lg bg-card'>
+              <CardHeader><CardTitle>Services Offered</CardTitle></CardHeader>
+              <CardContent>
+                {shop.services.length === 0 ? (
+                  <p>No services available for this shop.</p>
+                ) : (
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    {shop.services.map(service => (
+                      <div key={service.id} className='p-4 border border-border rounded-lg'>
+                        <h3 className='font-semibold text-foreground'>{service.name}</h3>
+                        <p className='text-sm text-muted-foreground mt-1'>{service.description}</p>
+                        <div className='flex items-center gap-4 mt-2 text-sm text-muted-foreground'>
+                          <span><Clock className='h-3 w-3 inline mr-1' />{service.duration} min</span>
+                          <span>₹{service.price}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            <Card className='shadow-lg bg-card mt-6'>
+              <CardHeader><CardTitle>Barbers</CardTitle></CardHeader>
+              <CardContent>
+                {shop.barbers.length === 0 ? (
+                  <p>No barbers available at this shop.</p>
+                ) : (
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    {shop.barbers.map(barber => (
+                      <div key={barber.id} className='p-4 border border-border rounded-lg'>
+                        <h3 className='font-semibold text-foreground'>{barber.name}</h3>
+                        <p className='text-sm text-muted-foreground'>{barber.experience} experience</p>
+                        <div className='flex flex-wrap gap-1 mt-2'>{barber.specialties.map((s, i) => <Badge key={i} variant='secondary' className='text-xs'>{s}</Badge>)}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </AnimatedTabsContent>
+          <AnimatedTabsContent value="reviews">
+            <Card className='shadow-lg bg-card'>
+              <CardHeader><CardTitle>Customer Reviews</CardTitle></CardHeader>
+              <CardContent>
+                {reviews.length === 0 ? (
+                  <p>No reviews yet.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {reviews.map((review) => (
+                      <div key={review.id} className="p-4 border border-border rounded-lg">
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`h-5 w-5 ${review.rating >= star ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                              />
+                            ))}
+                          </div>
+                          <span className="font-semibold">{review.rating.toFixed(1)}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-2">{new Date(review.created_at).toLocaleDateString()}</p>
+                        <p className="mt-1">{review.feedback}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </AnimatedTabsContent>
+          <AnimatedTabsContent value="policies">
+            <Card className='shadow-lg bg-card'>
+              <CardHeader><CardTitle>Shop Policies</CardTitle></CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="font-bold">Cancellation Policy</h3>
+                  <p className="text-muted-foreground">policy1</p>
+                </div>
+                <div>
+                  <h3 className="font-bold">Late Arrival Policy</h3>
+                  <p className="text-muted-foreground">policy2</p>
+                </div>
+                <div>
+                  <h3 className="font-bold">No-Show Policy</h3>
+                  <p className="text-muted-foreground">policy3</p>
+                </div>
+              </CardContent>
+            </Card>
+          </AnimatedTabsContent>
+        </Tabs>
+
         {/* Shop Location Map */}
         {shop.shop_latitude && shop.shop_longitude && (
           <Card className='shadow-lg bg-card'>
@@ -175,29 +277,6 @@ export default function ShopDetailsPage() {
           </Card>
         )}
 
-        {/* Services Offered */}
-        <Card className='shadow-lg bg-card'>
-          <CardHeader><CardTitle>Services Offered</CardTitle></CardHeader>
-          <CardContent>
-            {shop.services.length === 0 ? (
-              <p>No services available for this shop.</p>
-            ) : (
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                {shop.services.map(service => (
-                  <div key={service.id} className='p-4 border border-border rounded-lg'>
-                    <h3 className='font-semibold text-foreground'>{service.name}</h3>
-                    <p className='text-sm text-muted-foreground mt-1'>{service.description}</p>
-                    <div className='flex items-center gap-4 mt-2 text-sm text-muted-foreground'>
-                      <span><Clock className='h-3 w-3 inline mr-1' />{service.duration} min</span>
-                      <span>₹{service.price}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         <div className="w-full text-center mt-6">
           <Link href={`/customer/shop/${shop.id}/book`}>
             <Button size="lg" className="text-lg py-3">
@@ -205,57 +284,6 @@ export default function ShopDetailsPage() {
             </Button>
           </Link>
         </div>
-
-        {/* Barbers at this Shop */}
-        <Card className='shadow-lg bg-card'>
-          <CardHeader><CardTitle>Barbers</CardTitle></CardHeader>
-          <CardContent>
-            {shop.barbers.length === 0 ? (
-              <p>No barbers available at this shop.</p>
-            ) : (
-              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                {shop.barbers.map(barber => (
-                  <div key={barber.id} className='p-4 border border-border rounded-lg'>
-                    <h3 className='font-semibold text-foreground'>{barber.name}</h3>
-                    <p className='text-sm text-muted-foreground'>{barber.experience} experience</p>
-                    
-                    <div className='flex flex-wrap gap-1 mt-2'>{barber.specialties.map((s, i) => <Badge key={i} variant='secondary' className='text-xs'>{s}</Badge>)}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Reviews */}
-        <Card className='shadow-lg bg-card'>
-          <CardHeader><CardTitle>Customer Reviews</CardTitle></CardHeader>
-          <CardContent>
-            {reviews.length === 0 ? (
-              <p>No reviews yet.</p>
-            ) : (
-              <div className="space-y-4">
-                {reviews.map((review) => (
-                  <div key={review.id} className="p-4 border border-border rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`h-5 w-5 ${review.rating >= star ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
-                          />
-                        ))}
-                      </div>
-                      <span className="font-semibold">{review.rating.toFixed(1)}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-2">{new Date(review.created_at).toLocaleDateString()}</p>
-                    <p className="mt-1">{review.feedback}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
       </main>
     </div>
