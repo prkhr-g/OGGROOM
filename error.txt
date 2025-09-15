@@ -1,4 +1,0 @@
-Cashfree API Error: {
-  message: 'endpoint or method is not valid, please check api documentation',
-  code: 'request_failed',
-  type: 'api_connection_error'
