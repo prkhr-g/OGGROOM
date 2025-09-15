@@ -583,11 +583,18 @@ export default function CustomerHomeScreen() {
                             )}
                           </div>
                         </div>
-                        <Link href={`/customer/shop/${shop.id}`}>
-                          <Button size="sm" className="mt-1">
-                            Book Now
-                          </Button>
-                        </Link>
+                        <div className="flex flex-col sm:flex-row gap-2 mt-1">
+                          <Link href={`/customer/shop/${shop.id}`} className="w-full">
+                            <Button size="sm" variant="secondary" className="w-full">
+                              View Details
+                            </Button>
+                          </Link>
+                          <Link href={`/customer/shop/${shop.id}`} className="w-full">
+                            <Button size="sm" className="w-full">
+                              Book Now
+                            </Button>
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
