@@ -259,7 +259,7 @@ export default function LandingPage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section ref={heroRef} className="relative h-screen flex items-center justify-center overflow-hidden">
+        <section ref={heroRef} className="relative h-screen flex items-center justify-center overflow-hidden px-4 sm:px-6 md:px-8 lg:px-12">
           <motion.div
             className="absolute inset-0 z-0"
             style={{
@@ -295,7 +295,7 @@ export default function LandingPage() {
               }}
             >
               <Link href="/auth?type=customer">
-                <Button size="lg" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full sm:w-auto px-4 sm:px-6 md:px-8 lg:px-12">
                   Get Started
                 </Button>
               </Link>
