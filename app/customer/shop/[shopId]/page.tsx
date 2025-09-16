@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Mail, Phone, MapPin, Clock, Loader2, Star, DollarSign } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AnimatedTabsContent } from "@/components/ui/animated-tabs-content"
+import { AnimatePresence, motion } from 'framer-motion'
 
 
 import { Badge } from '@/components/ui/badge'
@@ -64,6 +65,7 @@ export default function ShopDetailsPage() {
   const [reviews, setReviews] = useState<Review[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isMapVisible, setIsMapVisible] = useState(false)
 
   useEffect(() => {
     const fetchShopDetails = async () => {
@@ -139,7 +141,7 @@ export default function ShopDetailsPage() {
         </div>
       </header>
 
-      <main className='max-w-6xl mx-auto px-4 py-6 space-y-6'>
+      <main className='max-w-6xl mx-auto px-4 py-6 space-y-6 pb-24'>
         {/* Shop Details */}
         <Card className='shadow-lg bg-card'>
           <CardHeader>
@@ -155,13 +157,52 @@ export default function ShopDetailsPage() {
               </div>
             </div>
           </CardHeader>
-          <CardContent className='space-y-2'>
-            <p className='flex items-center text-sm text-muted-foreground'><MapPin className='h-4 w-4 mr-2' />{shop.address}</p>
+          <CardContent className='space-y-3'>
+            <div className="flex items-center justify-between">
+                <button onClick={() => setIsMapVisible(!isMapVisible)} className='flex items-center text-sm text-muted-foreground text-left hover:text-primary transition-colors'>
+                    <MapPin className='h-4 w-4 mr-2 flex-shrink-0' />
+                    <span>{shop.address}</span>
+                </button>
+                {shop.shop_latitude && shop.shop_longitude && !isMapVisible && (
+                    <Button variant="outline" size="sm" onClick={() => setIsMapVisible(true)} className="ml-4 flex-shrink-0">View on Map</Button>
+                )}
+            </div>
             <p className='flex items-center text-sm text-muted-foreground'><Phone className='h-4 w-4 mr-2' />{shop.phone}</p>
             <p className='flex items-center text-sm text-muted-foreground'><Mail className='h-4 w-4 mr-2' />{shop.email}</p>
             <p className='flex items-center text-sm text-muted-foreground'><Clock className='h-4 w-4 mr-2' />{shop.opening_time} - {shop.closing_time}</p>
           </CardContent>
         </Card>
+
+        {/* Shop Location Map */}
+        <AnimatePresence>
+          {isMapVisible && shop.shop_latitude && shop.shop_longitude && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+              className="overflow-hidden"
+            >
+              <Card className='shadow-lg bg-card'>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Location</CardTitle>
+                    <Button variant="ghost" size="sm" onClick={() => setIsMapVisible(false)}>Hide Map</Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <GoogleMapsProvider>
+                    <GoogleMapDisplay
+                      latitude={shop.shop_latitude}
+                      longitude={shop.shop_longitude}
+                      shopName={shop.name}
+                    />
+                  </GoogleMapsProvider>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <Tabs defaultValue="services" className="w-full">
           <TabsList className="grid w-full grid-cols-3 bg-muted">
@@ -261,31 +302,17 @@ export default function ShopDetailsPage() {
           </AnimatedTabsContent>
         </Tabs>
 
-        {/* Shop Location Map */}
-        {shop.shop_latitude && shop.shop_longitude && (
-          <Card className='shadow-lg bg-card'>
-            <CardHeader><CardTitle>Location</CardTitle></CardHeader>
-            <CardContent>
-              <GoogleMapsProvider>
-                <GoogleMapDisplay
-                  latitude={shop.shop_latitude}
-                  longitude={shop.shop_longitude}
-                  shopName={shop.name}
-                />
-              </GoogleMapsProvider>
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="w-full text-center mt-6">
-          <Link href={`/customer/shop/${shop.id}/book`}>
-            <Button size="lg" className="text-lg py-3">
-              Book Now
-            </Button>
-          </Link>
-        </div>
-
       </main>
+
+      <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border p-4 shadow-lg">
+        <div className="max-w-6xl mx-auto">
+            <Link href={`/customer/shop/${shop.id}/book`} className="w-full">
+                <Button size="lg" className="w-full text-lg py-3">
+                    Book Now
+                </Button>
+            </Link>
+        </div>
+    </div>
     </div>
   )
 }
