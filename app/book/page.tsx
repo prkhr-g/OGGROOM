@@ -255,13 +255,13 @@ function BookingPageContent() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                Select Barber
+                Select Staff
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Select value={selectedBarber} onValueChange={setSelectedBarber} required>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a barber" />
+                  <SelectValue placeholder="Choose a Staff" />
                 </SelectTrigger>
                 <SelectContent>
                   {shop?.barbers.map((barber) => (
@@ -358,7 +358,7 @@ function BookingPageContent() {
                 <Label htmlFor="notes">Special Requests (Optional)</Label>
                 <Textarea
                   id="notes"
-                  placeholder="Any special requests or notes for your barber..."
+                  placeholder="Any special requests or notes for your Staff..."
                   value={customerInfo.notes}
                   onChange={(e) => setCustomerInfo({ ...customerInfo, notes: e.target.value })}
                 />
@@ -378,7 +378,7 @@ function BookingPageContent() {
                     <strong>Service:</strong> {shop?.services.find((s) => s.id.toString() === selectedService)?.name}
                   </p>
                   <p>
-                    <strong>Barber:</strong> {shop?.barbers.find((b) => b.id.toString() === selectedBarber)?.name}
+                    <strong>Staff:</strong> {shop?.barbers.find((b) => b.id.toString() === selectedBarber)?.name}
                   </p>
                   <p>
                     <strong>Date:</strong> {selectedDate}

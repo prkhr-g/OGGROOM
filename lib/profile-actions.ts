@@ -366,12 +366,12 @@ export async function addBarber(
     })
 
     if (error) {
-      return { error: "Failed to add barber: " + error.message }
+      return { error: "Failed to add staff: " + error.message }
     }
 
     return { success: true }
   } catch (error: any) {
-    return { error: "Failed to add barber: " + error.message }
+    return { error: "Failed to add staff: " + error.message }
   }
 }
 
@@ -396,12 +396,12 @@ export async function deleteBarber(barberId: number) {
     const { error } = await supabase.from("barbers").delete().eq("id", barberId)
 
     if (error) {
-      return { error: "Failed to delete barber: " + error.message }
+      return { error: "Failed to delete staff: " + error.message }
     }
 
     return { success: true }
   } catch (error: any) {
-    return { error: "Failed to delete barber: " + error.message }
+    return { error: "Failed to delete staff: " + error.message }
   }
 }
 
@@ -443,12 +443,12 @@ export async function updateBarber(
     const { error } = await supabase.from("barbers").update(barberData).eq("id", barberId)
 
     if (error) {
-      return { error: "Failed to update barber: " + error.message }
+      return { error: "Failed to update staff: " + error.message }
     }
 
     return { success: true }
   } catch (error: any) {
-    return { error: "Failed to update barber: " + error.message }
+    return { error: "Failed to update staff: " + error.message }
   }
 }
 

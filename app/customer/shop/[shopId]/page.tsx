@@ -233,10 +233,10 @@ export default function ShopDetailsPage() {
               </CardContent>
             </Card>
             <Card className='shadow-lg bg-card mt-6'>
-              <CardHeader><CardTitle>Barbers</CardTitle></CardHeader>
+              <CardHeader><CardTitle>Staffs</CardTitle></CardHeader>
               <CardContent>
                 {shop.barbers.length === 0 ? (
-                  <p>No barbers available at this shop.</p>
+                  <p>No staffs available at this shop.</p>
                 ) : (
                   <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                     {shop.barbers.map(barber => (

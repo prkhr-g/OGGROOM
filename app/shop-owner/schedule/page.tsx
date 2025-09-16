@@ -120,7 +120,7 @@ function ShopSchedulePageContent() {
                     <div className='flex items-center gap-2'><User className='h-4 w-4 text-muted-foreground' />Customer: {booking.customer?.name || 'N/A'}</div>
                     <div className='flex items-center gap-2'><Calendar className='h-4 w-4 text-muted-foreground' />Date: {format(parseISO(booking.booking_date), 'PPP')}</div>
                     <div className='flex items-center gap-2'><Clock className='h-4 w-4 text-muted-foreground' />Time: {booking.booking_time}</div>
-                    <div className='flex items-center gap-2'><Info className='h-4 w-4 text-muted-foreground' />Barber: {booking.barber?.name || 'N/A'}</div>
+                    <div className='flex items-center gap-2'><Info className='h-4 w-4 text-muted-foreground' />Staff: {booking.barber?.name || 'N/A'}</div>
                     <div className='flex items-center gap-2'><Info className='h-4 w-4 text-muted-foreground' />Service(s): {booking.services || 'N/A'}</div>
                     <div className='flex items-center gap-2'><Banknote className='h-4 w-4 text-muted-foreground' />Price: ₹{booking.total_price}</div>
                     {booking.customer?.phone && <div className='flex items-center gap-2'><Phone className='h-4 w-4 text-muted-foreground' />Phone: {booking.customer.phone}</div>}

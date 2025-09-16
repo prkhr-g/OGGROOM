@@ -284,11 +284,11 @@ function ShopOwnerDashboardContent() {
               </Dialog>
               <Dialog open={isAddBarberOpen} onOpenChange={setIsAddBarberOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="h-20 flex-col gap-2"><Users className="h-6 w-6" />Manage Barbers</Button>
+                  <Button variant="outline" className="h-20 flex-col gap-2"><Users className="h-6 w-6" />Manage Staffs</Button>
                 </DialogTrigger>
                 <DialogContent className="bg-card">
                   <DialogHeader>
-                    <DialogTitle>Add New Barber</DialogTitle>
+                    <DialogTitle>Add New Staff</DialogTitle>
                     <DialogDescription>Add a new team member.</DialogDescription>
                   </DialogHeader>
                   <form onSubmit={e => { e.preventDefault(); const fd = new FormData(e.currentTarget); handleAddBarber({ name: fd.get('name') as string, experience: fd.get('experience') as string, phone: fd.get('phone') as string, email: fd.get('email') as string, specialties: (fd.get('specialties') as string).split(',').map(s => s.trim()) }); }} className='space-y-4'>
@@ -406,7 +406,7 @@ function ShopOwnerDashboardContent() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div><CardTitle>Team Management</CardTitle><CardDescription>Manage your barbers and staff</CardDescription></div>
-              <Button onClick={() => setIsAddBarberOpen(true)} size="sm"><Plus className="h-4 w-4 mr-2" />Add Barber</Button>
+              <Button onClick={() => setIsAddBarberOpen(true)} size="sm"><Plus className="h-4 w-4 mr-2" />Add Staffs</Button>
             </div>
           </CardHeader>
           <CardContent>
@@ -441,8 +441,8 @@ function ShopOwnerDashboardContent() {
           <Dialog open={isEditBarberOpen} onOpenChange={setIsEditBarberOpen}>
             <DialogContent className="bg-card">
               <DialogHeader>
-                <DialogTitle>Edit Barber</DialogTitle>
-                <DialogDescription>Update the details of this barber.</DialogDescription>
+                <DialogTitle>Edit Staff</DialogTitle>
+                <DialogDescription>Update the details of this staff.</DialogDescription>
               </DialogHeader>
               <form onSubmit={e => {
                 e.preventDefault();

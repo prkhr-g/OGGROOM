@@ -298,12 +298,12 @@ function BookAppointmentScreenContent() {
                 <span className="w-7 h-7 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-base font-bold">
                   2
                 </span>
-                Select Barber
+                Select Staff
               </CardTitle>
             </CardHeader>
             <CardContent className="grid md:grid-cols-2 gap-4">
               {shop.barbers.length === 0 ? (
-                <p>No barbers available for this shop.</p>
+                <p>No staffs available for this shop.</p>
               ) : (
                 shop.barbers.map((barber) => (
                   <Card
@@ -379,7 +379,7 @@ function BookAppointmentScreenContent() {
                 {isFetchingSlots ? (
                   <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
                 ) : availableTimeSlots.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">No available slots for this date and barber.</p>
+                  <p className="text-muted-foreground text-center py-8">No available slots for this date and staff.</p>
                 ) : (
                   <div className="grid grid-cols-3 gap-2">
                     {availableTimeSlots.map((time) => (
@@ -420,7 +420,7 @@ function BookAppointmentScreenContent() {
               </div>
               {selectedBarberData && (
                 <p className="text-sm">
-                  <strong>Barber:</strong> {selectedBarberData.name}
+                  <strong>Staff:</strong> {selectedBarberData.name}
                 </p>
               )}
               {selectedDate && (

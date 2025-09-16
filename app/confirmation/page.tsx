@@ -95,7 +95,7 @@ function ConfirmationPageContent() {
             const currentTotalDuration = currentSelectedServices.reduce((sum, service) => sum + service.duration, 0);
 
             if (!currentSelectedBarber) {
-              throw new Error("Barber details missing for booking confirmation.");
+              throw new Error("Staff details missing for booking confirmation.");
             }
 
             // Now that payment is confirmed, create the booking
@@ -329,7 +329,7 @@ function ConfirmationPageContent() {
                 ))}
               </ul>
             </div>
-            <p><strong>Barber:</strong> {selectedBarber.name}</p>
+            <p><strong>Staff:</strong> {selectedBarber.name}</p>
             <p><strong>Date:</strong> {new Date(date).toLocaleDateString()}</p>
             <p><strong>Time:</strong> {time}</p>
             <div className='border-t border-border pt-3 mt-3 space-y-1'>
