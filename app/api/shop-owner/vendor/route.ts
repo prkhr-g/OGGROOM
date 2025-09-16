@@ -4,44 +4,57 @@ import { createServerClient } from '@/lib/supabase-server';
 export async function POST(request: Request) {
   const supabase = createServerClient();
   const { data: { user } } = await supabase.auth.getUser();
+  // console.log('User in vendor API:', user);
 
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
-    const { name, email, phone, upi_id } = await request.json();
-
-    // Use the user's ID as the vendor_id for idempotency
-    const vendor_id = user.id;
+    const { name, email, phone, upi_id, vendor_id } = await request.json();
 
     const cashfreeRequestBody = {
       vendor_id: vendor_id,
       vendor_email: email,
       vendor_phone: phone,
       vendor_name: name,
-      upi: {
-        vpa: upi_id
-      },
+      status: 'ACTIVE',
+      verify_account: true,
+      dashboard_access: true,
       settlement_cycle_id: 1, // T+1 cycle
+      kyc_details: {
+        account_type: 'BUSINESS',
+        business_type: 'Professional Services',
+        pan: 'TESTP1234A', // Placeholder PAN
+        gst: '11AAAAA1111A1Z0', // Placeholder GST
+        cin: 'L00000Aa0000AaA000000', // Placeholder CIN
+        uidai: '753624181019', // Placeholder UIDAI
+      },
     };
 
-    const cashfreeResponse = await fetch(`${process.env.CASHFREE_API_URL}/easysplit/v1/vendors`, {
+    const cashfreeResponse = await fetch(`${process.env.CASHFREE_API_URL}/pg/easy-split/vendors`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-client-id': process.env.CASHFREE_CLIENT_ID as string,
         'x-client-secret': process.env.CASHFREE_CLIENT_SECRET as string,
-        'x-api-version': '2022-09-01',
+        'x-api-version': '2025-01-01',
         'x-request-id': `req_${Date.now()}`,
       },
       body: JSON.stringify(cashfreeRequestBody),
     });
 
     if (!cashfreeResponse.ok) {
-      const errorData = await cashfreeResponse.json();
-      console.error('Cashfree API Error:', errorData);
-      return NextResponse.json({ success: false, error: errorData }, { status: cashfreeResponse.status });
+      const errorText = await cashfreeResponse.text();
+      console.error('Cashfree API Raw Error Response:', errorText);
+      try {
+        const errorData = JSON.parse(errorText);
+        console.error('Cashfree API Error (Parsed):', errorData);
+        return NextResponse.json({ success: false, error: errorData }, { status: cashfreeResponse.status });
+      } catch (parseError) {
+        console.error('Failed to parse Cashfree API error response as JSON:', parseError);
+        return NextResponse.json({ success: false, error: 'Cashfree API returned non-JSON error: ' + errorText }, { status: cashfreeResponse.status });
+      }
     }
 
     const cashfreeData = await cashfreeResponse.json();

@@ -591,7 +591,7 @@ export default function CustomerHomeScreen() {
                               View Details
                             </Button>
                           </Link>
-                          <Link href={`/customer/shop/${shop.id}`} className="w-full">
+                          <Link href={`/customer/shop/${shop.id}/book`} className="w-full">
                             <Button size="sm" className="w-full">
                               Book Now
                             </Button>

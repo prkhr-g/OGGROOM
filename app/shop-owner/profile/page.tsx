@@ -45,7 +45,7 @@ interface ShopOwnerProfile {
 }
 
 function ShopOwnerProfilePageContent() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
   const [profile, setProfile] = useState<ShopOwnerProfile | null>(null)
   const [isEditing, setIsEditing] = useState(false)
@@ -72,10 +72,11 @@ function ShopOwnerProfilePageContent() {
   })
 
   useEffect(() => {
+    console.log('Auth Loading:', authLoading, 'User in useEffect:', user);
     if (user) {
       loadProfile()
     }
-  }, [user])
+  }, [user, authLoading])
 
   const loadProfile = async () => {
     try {
@@ -205,6 +206,8 @@ function ShopOwnerProfilePageContent() {
       </div>
     )
   }
+
+  console.log('Profile Email for VendorIdForm:', profile?.email); // Correctly placed console.log
 
   // The form is always displayed, but its behavior (create/edit) depends on `profile`
   return (
@@ -398,7 +401,7 @@ function ShopOwnerProfilePageContent() {
             isOpen={isVendorModalOpen}
             onClose={() => setIsVendorModalOpen(false)}
             ownerName={profile.name}
-            ownerEmail={profile.email}
+            ownerEmail={user?.email || ''} // Use user.email directly
             onSuccess={handleVendorIdSuccess}
           />
         )}

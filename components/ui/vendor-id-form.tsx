@@ -39,6 +39,7 @@ export function VendorIdForm({ isOpen, onClose, ownerName, ownerEmail, onSuccess
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           name: ownerName,
           email: ownerEmail,
