@@ -17,6 +17,7 @@ import dynamic from "next/dynamic"
 import Link from "next/link"
 import Image from "next/image"
 import { AuthProvider, useAuth } from "@/components/auth-provider"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { updateShopOwnerProfile, getShopOwnerProfile, updateShopStatus, createShopOwnerProfile } from "@/lib/profile-actions"
 import { VendorIdForm } from "@/components/ui/vendor-id-form"
 
@@ -47,6 +48,7 @@ interface ShopOwnerProfile {
 function ShopOwnerProfilePageContent() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
+  const supabase = createClientComponentClient();
   const [profile, setProfile] = useState<ShopOwnerProfile | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -199,6 +201,11 @@ function ShopOwnerProfilePageContent() {
     loadProfile();
   }
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -224,6 +231,7 @@ function ShopOwnerProfilePageContent() {
             <Link href='/shop-owner/dashboard'>
               <Button variant='outline' size='sm'>Dashboard</Button>
             </Link>
+            <Button variant='destructive' size='sm' onClick={handleLogout}>Logout</Button>
             {profile && (
               <Avatar className="h-9 w-9">
                 <AvatarImage src="/placeholder.svg?height=36&width=36" alt="User Avatar" />

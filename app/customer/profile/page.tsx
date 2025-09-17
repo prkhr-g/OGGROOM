@@ -14,7 +14,9 @@ import dynamic from "next/dynamic"
 import Link from "next/link"
 import Image from "next/image"
 import { AuthProvider, useAuth } from "@/components/auth-provider"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { updateCustomerProfile, getCustomerProfile } from "@/lib/profile-actions"
+import { useRouter } from "next/navigation";
 
 const AddressAutocompleteInput = dynamic(() => import('@/components/ui/address-autocomplete-input').then(mod => mod.AddressAutocompleteInput), { ssr: false, loading: () => <Loader2 className='h-8 w-8 animate-spin text-primary' /> });
 
@@ -35,6 +37,8 @@ interface CustomerProfile {
 
 function CustomerProfilePageContent() {
   const { user } = useAuth()
+  const router = useRouter()
+  const supabase = createClientComponentClient();
   const [profile, setProfile] = useState<CustomerProfile | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
@@ -130,6 +134,11 @@ function CustomerProfilePageContent() {
     setIsEditing(false)
     setError("")
   }
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
 
   if (isLoading) {
     return (
@@ -238,10 +247,13 @@ function CustomerProfilePageContent() {
               <span className="text-xl font-bold text-foreground">My Profile</span>
             </div>
           </div>
-          <Avatar className="h-9 w-9">
-            <AvatarImage src="/placeholder.svg?height=36&width=36" alt="User Avatar" />
-            <AvatarFallback>{profile.name.charAt(0)}</AvatarFallback>
-          </Avatar>
+          <div className="flex items-center gap-2">
+            <Button variant='destructive' size='sm' onClick={handleLogout}>Logout</Button>
+            <Avatar className="h-9 w-9">
+              <AvatarImage src="/placeholder.svg?height=36&width=36" alt="User Avatar" />
+              <AvatarFallback>{profile.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+          </div>
         </div>
       </header>
 
