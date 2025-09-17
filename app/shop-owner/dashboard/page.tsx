@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -58,6 +58,32 @@ function ShopOwnerDashboardContent() {
   const [services, setServices] = useState<Service[]>([])
   const [barbers, setBarbers] = useState<Barber[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
+  const [showTodaysAppointments, setShowTodaysAppointments] = useState(false)
+  const [showServicesManagement, setShowServicesManagement] = useState(false)
+  const [showTeamManagement, setShowTeamManagement] = useState(false)
+
+  const todaysAppointmentsRef = useRef<HTMLDivElement>(null)
+  const servicesManagementRef = useRef<HTMLDivElement>(null)
+  const teamManagementRef = useRef<HTMLDivElement>(null)
+
+
+  useEffect(() => {
+    if (showTodaysAppointments && todaysAppointmentsRef.current) {
+      todaysAppointmentsRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [showTodaysAppointments])
+
+  useEffect(() => {
+    if (showServicesManagement && servicesManagementRef.current) {
+      servicesManagementRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [showServicesManagement])
+
+  useEffect(() => {
+    if (showTeamManagement && teamManagementRef.current) {
+      teamManagementRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [showTeamManagement])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -202,6 +228,24 @@ function ShopOwnerDashboardContent() {
     setIsUpdatingBarber(false);
   };
 
+  const handleShowTodaysAppointments = () => {
+    setShowTodaysAppointments(prev => !prev);
+    setShowServicesManagement(false);
+    setShowTeamManagement(false);
+  };
+
+  const handleShowServicesManagement = () => {
+    setShowServicesManagement(prev => !prev);
+    setShowTodaysAppointments(false);
+    setShowTeamManagement(false);
+  };
+
+  const handleShowTeamManagement = () => {
+    setShowTeamManagement(prev => !prev);
+    setShowTodaysAppointments(false);
+    setShowServicesManagement(false);
+  };
+
   // Mock functions
   const updateBookingStatus = async (bookingId: number, newStatus: string) => {
     const result = await updateBookingStatusInDb(bookingId, newStatus);
@@ -242,7 +286,11 @@ function ShopOwnerDashboardContent() {
           transition={{ duration: 1 }}
         >
           {stats.map((stat, index) => (
-            <Card key={index} className="bg-card">
+            <Card 
+              key={index} 
+              className={`bg-card ${stat.title === "Today's Bookings" ? 'cursor-pointer hover:bg-muted' : ''}`}
+              onClick={() => stat.title === "Today's Bookings" && handleShowTodaysAppointments()}
+            >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -261,49 +309,14 @@ function ShopOwnerDashboardContent() {
           <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
-                 <DialogTrigger asChild>
-                   <Button className="h-20 flex-col gap-2"><Plus className="h-6 w-6" />Add Service</Button>
-                 </DialogTrigger>
-                 <DialogContent className="bg-card">
-                   <DialogHeader>
-                     <DialogTitle>Add New Service</DialogTitle>
-                     <DialogDescription>Create a new service for your shop.</DialogDescription>
-                   </DialogHeader>
-                   <form onSubmit={e => { e.preventDefault(); const fd = new FormData(e.currentTarget); handleAddService({ name: fd.get('name') as string, duration: Number(fd.get('duration')), price: Number(fd.get('price')), description: fd.get('description') as string }); }} className='space-y-4'>
-                     <div><Label htmlFor='name'>Service Name</Label><Input id='name' name='name' required disabled={isSavingService} /></div>
-                     <div className='grid grid-cols-2 gap-4'>
-                       <div><Label htmlFor='duration'>Duration (minutes)</Label><Input id='duration' name='duration' type='number' required disabled={isSavingService} /></div>
-                       <div><Label htmlFor='price'>Price (₹)</Label><Input id='price' name='price' type='number' step='0.01' required disabled={isSavingService} /></div>
-                     </div>
-                     <div><Label htmlFor='description'>Description</Label><Textarea id='description' name='description' disabled={isSavingService} /></div>
-                     {serviceError && <p className='text-sm text-destructive'>{serviceError}</p>}
-                     <Button type='submit' className='w-full' disabled={isSavingService}>{isSavingService ? <><Loader2 className='h-4 w-4 mr-2 animate-spin' />Saving...</> : 'Add Service'}</Button>
-                   </form>
-                 </DialogContent>
-              </Dialog>
-              <Dialog open={isAddBarberOpen} onOpenChange={setIsAddBarberOpen}>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="h-20 flex-col gap-2"><Users className="h-6 w-6" />Manage Staffs</Button>
-                </DialogTrigger>
-                <DialogContent className="bg-card">
-                  <DialogHeader>
-                    <DialogTitle>Add New Staff</DialogTitle>
-                    <DialogDescription>Add a new team member.</DialogDescription>
-                  </DialogHeader>
-                  <form onSubmit={e => { e.preventDefault(); const fd = new FormData(e.currentTarget); handleAddBarber({ name: fd.get('name') as string, experience: fd.get('experience') as string, phone: fd.get('phone') as string, email: fd.get('email') as string, specialties: (fd.get('specialties') as string).split(',').map(s => s.trim()) }); }} className='space-y-4'>
-                    <div><Label htmlFor='barber-name'>Full Name</Label><Input id='barber-name' name='name' required disabled={isSavingBarber} /></div>
-                    <div><Label htmlFor='experience'>Experience</Label><Input id='experience' name='experience' placeholder='e.g., 5 years' required disabled={isSavingBarber} /></div>
-                    <div className='grid grid-cols-2 gap-4'>
-                      <div><Label htmlFor='barber-phone'>Phone</Label><Input id='barber-phone' name='phone' type='tel' required disabled={isSavingBarber} /></div>
-                      <div><Label htmlFor='barber-email'>Email</Label><Input id='barber-email' name='email' type='email' required disabled={isSavingBarber} /></div>
-                    </div>
-                    <div><Label htmlFor='specialties'>Specialties (comma-separated)</Label><Input id='specialties' name='specialties' placeholder='e.g., Classic Cuts, Fades' disabled={isSavingBarber} /></div>
-                    {barberError && <p className='text-sm text-destructive'>{barberError}</p>}
-                    <Button type='submit' className='w-full' disabled={isSavingBarber}>{isSavingBarber ? <><Loader2 className='h-4 w-4 mr-2 animate-spin' />Saving...</> : 'Add Barber'}</Button>
-                  </form>
-                </DialogContent>
-              </Dialog>
+              <Button className="h-20 flex-col gap-2" onClick={handleShowServicesManagement}>
+                <Plus className="h-6 w-6" />
+                Service's Management
+              </Button>
+              <Button variant="outline" className="h-20 flex-col gap-2" onClick={handleShowTeamManagement}>
+                <Users className="h-6 w-6" />
+                Team Management
+              </Button>
               <Link href="/shop-owner/schedule" className="h-20 flex-col gap-2 inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground"><Calendar className="h-6 w-6" />View Schedule</Link>
               <Link href="/shop-owner/analytics" className="h-20 flex-col gap-2 inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground"><TrendingUp className="h-6 w-6" />Analytics</Link>
             </div>
@@ -311,130 +324,164 @@ function ShopOwnerDashboardContent() {
         </Card>
 
         {/* Today's Appointments */}
-        <Card className="bg-card">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div><CardTitle>Today's Appointments</CardTitle><CardDescription>Manage your daily bookings</CardDescription></div>
-              <Button variant="outline" size="sm">View All</Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {todayBookings.length === 0 ? <p>No appointments today.</p> : todayBookings.map(booking => (
-                <div key={booking.id} className="flex items-center justify-between p-4 bg-background rounded-lg">
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{booking.customer?.name || 'N/A'}</h3>
-                    <div className="text-sm text-muted-foreground">{booking.service_name} with {booking.barber_name}</div>
-                    <div className="text-sm text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{booking.booking_time}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={booking.status === 'confirmed' ? 'default' : booking.status === 'pending' ? 'secondary' : 'destructive'}>{booking.status}</Badge>
-                    <Button variant="outline" size="sm" onClick={() => setSelectedBooking(booking)}><Eye className="h-4 w-4" /></Button>
-                  </div>
+        {showTodaysAppointments && (
+          <motion.div
+            ref={todaysAppointmentsRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card className="bg-card">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div><CardTitle>Today's Appointments</CardTitle><CardDescription>Manage your daily bookings</CardDescription></div>
+                  <Button variant="outline" size="sm">View All</Button>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Services Management */}
-        <Card className="bg-card">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div><CardTitle>Services Management</CardTitle><CardDescription>Manage your shop's services</CardDescription></div>
-              <Button onClick={() => setIsAddServiceOpen(true)} size="sm"><Plus className="h-4 w-4 mr-2" />Add Service</Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-4">
-              {services.map(service => (
-                <div key={service.id} className="p-4 border border-border rounded-lg">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold">{service.name}</h3>
-                      <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
-                      <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{service.duration} min</span>
-                        <span className="flex items-center gap-1">₹{service.price}</span>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {todayBookings.length === 0 ? <p>No appointments today.</p> : todayBookings.map(booking => (
+                    <div key={booking.id} className="flex items-center justify-between p-4 bg-background rounded-lg">
+                      <div className="flex-1">
+                        <h3 className="font-semibold">{booking.customer?.name || 'N/A'}</h3>
+                        <div className="text-sm text-muted-foreground">{booking.service_name} with {booking.barber_name}</div>
+                        <div className="text-sm text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{booking.booking_time}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={booking.status === 'confirmed' ? 'default' : booking.status === 'pending' ? 'secondary' : 'destructive'}>{booking.status}</Badge>
+                        <Button variant="outline" size="sm" onClick={() => setSelectedBooking(booking)}><Eye className="h-4 w-4" /></Button>
                       </div>
                     </div>
-                    <div className="flex gap-1">
-                      <Button size="sm" variant="outline" onClick={() => { setEditingService(service); setIsEditServiceOpen(true); }}><Edit className="h-3 w-3" /></Button>
-                      <Button size="sm" variant="outline" onClick={() => handleDeleteService(service.id)}><Trash2 className="h-3 w-3" /></Button>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
-        {/* Edit Service Dialog */}
-        {editingService && (
-          <Dialog open={isEditServiceOpen} onOpenChange={setIsEditServiceOpen}>
-            <DialogContent className="bg-card">
-              <DialogHeader>
-                <DialogTitle>Edit Service</DialogTitle>
-                <DialogDescription>Update the details of this service.</DialogDescription>
-              </DialogHeader>
-              <form onSubmit={e => {
-                e.preventDefault();
-                const fd = new FormData(e.currentTarget);
-                handleUpdateService({
-                  ...editingService,
-                  name: fd.get('name') as string,
-                  duration: Number(fd.get('duration')),
-                  price: Number(fd.get('price')),
-                  description: fd.get('description') as string,
-                });
-              }} className='space-y-4'>
-                <div><Label htmlFor='edit-service-name'>Service Name</Label><Input id='edit-service-name' name='name' required value={editingService.name} onChange={e => setEditingService({ ...editingService!, name: e.target.value })} disabled={isUpdatingService} /></div>
-                <div className='grid grid-cols-2 gap-4'>
-                  <div><Label htmlFor='edit-service-duration'>Duration (minutes)</Label><Input id='edit-service-duration' name='duration' type='number' required value={editingService.duration} onChange={e => setEditingService({ ...editingService!, duration: Number(e.target.value) })} disabled={isUpdatingService} /></div>
-                  <div><Label htmlFor='edit-service-price'>Price (₹)</Label><Input id='edit-service-price' name='price' type='number' step='0.01' required value={editingService.price} onChange={e => setEditingService({ ...editingService!, price: Number(e.target.value) })} disabled={isUpdatingService} /></div>
+        {/* Services Management */}
+        {showServicesManagement && (
+          <motion.div
+            ref={servicesManagementRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card className="bg-card">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div><CardTitle>Services Management</CardTitle><CardDescription>Manage your shop's services</CardDescription></div>
+                  <Button onClick={() => setIsAddServiceOpen(true)} size="sm"><Plus className="h-4 w-4 mr-2" />Add Service</Button>
                 </div>
-                <div><Label htmlFor='edit-service-description'>Description</Label><Textarea id='edit-service-description' name='description' value={editingService.description} onChange={e => setEditingService({ ...editingService!, description: e.target.value })} disabled={isUpdatingService} /></div>
-                {updateServiceError && <p className='text-sm text-destructive'>{updateServiceError}</p>}
-                <Button type='submit' className='w-full' disabled={isUpdatingService}>{isUpdatingService ? <><Loader2 className='h-4 w-4 mr-2 animate-spin' />Updating...</> : 'Update Service'}</Button>
-              </form>
-            </DialogContent>
-          </Dialog>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {services.map(service => (
+                    <div key={service.id} className="p-4 border border-border rounded-lg">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold">{service.name}</h3>
+                          <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{service.duration} min</span>
+                            <span className="flex items-center gap-1">₹{service.price}</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="outline" onClick={() => { setEditingService(service); setIsEditServiceOpen(true); }}><Edit className="h-3 w-3" /></Button>
+                          <Button size="sm" variant="outline" onClick={() => handleDeleteService(service.id)}><Trash2 className="h-3 w-3" /></Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
+              <DialogContent className="bg-card">
+                <DialogHeader>
+                  <DialogTitle>Add New Service</DialogTitle>
+                  <DialogDescription>Create a new service for your shop.</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={e => { e.preventDefault(); const fd = new FormData(e.currentTarget); handleAddService({ name: fd.get('name') as string, duration: Number(fd.get('duration')), price: Number(fd.get('price')), description: fd.get('description') as string }); }} className='space-y-4'>
+                  <div><Label htmlFor='name'>Service Name</Label><Input id='name' name='name' required disabled={isSavingService} /></div>
+                  <div className='grid grid-cols-2 gap-4'>
+                    <div><Label htmlFor='duration'>Duration (minutes)</Label><Input id='duration' name='duration' type='number' required disabled={isSavingService} /></div>
+                    <div><Label htmlFor='price'>Price (₹)</Label><Input id='price' name='price' type='number' step='0.01' required disabled={isSavingService} /></div>
+                  </div>
+                  <div><Label htmlFor='description'>Description</Label><Textarea id='description' name='description' disabled={isSavingService} /></div>
+                  {serviceError && <p className='text-sm text-destructive'>{serviceError}</p>}
+                  <Button type='submit' className='w-full' disabled={isSavingService}>{isSavingService ? <><Loader2 className='h-4 w-4 mr-2 animate-spin' />Saving...</> : 'Add Service'}</Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </motion.div>
         )}
 
         {/* Team Management */}
-        <Card className="bg-card">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div><CardTitle>Team Management</CardTitle><CardDescription>Manage your barbers and staff</CardDescription></div>
-              <Button onClick={() => setIsAddBarberOpen(true)} size="sm"><Plus className="h-4 w-4 mr-2" />Add Staffs</Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-4">
-              {barbers.map(barber => (
-                <div key={barber.id} className="p-4 border border-border rounded-lg">
-                   <div className="flex items-start gap-3">
-                    <Avatar>
-                      <AvatarImage src="/placeholder.svg?height=40&width=40" />
-                      <AvatarFallback>{barber.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <h3 className="font-semibold">{barber.name}</h3>
-                      <p className="text-sm text-muted-foreground">{barber.experience} experience</p>
-                      
-                      <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground"><Phone className="h-3 w-3" /><span>{barber.phone}</span></div>
-                      <div className="flex flex-wrap gap-1 mt-2">{barber.specialties.map((s, i) => <Badge key={i} variant="secondary" className="text-xs">{s}</Badge>)}</div>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button size="sm" variant="outline" onClick={() => { setEditingBarber(barber); setIsEditBarberOpen(true); }}><Edit className="h-3 w-3" /></Button>
-                      <Button size="sm" variant="outline" onClick={() => handleDeleteBarber(barber.id)}><Trash2 className="h-3 w-3" /></Button>
-                    </div>
-                  </div>
+        {showTeamManagement && (
+          <motion.div
+            ref={teamManagementRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card className="bg-card">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div><CardTitle>Team Management</CardTitle><CardDescription>Manage your barbers and staff</CardDescription></div>
+                  <Button onClick={() => setIsAddBarberOpen(true)} size="sm"><Plus className="h-4 w-4 mr-2" />Add Staffs</Button>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {barbers.map(barber => (
+                    <div key={barber.id} className="p-4 border border-border rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <Avatar>
+                          <AvatarImage src="/placeholder.svg?height=40&width=40" />
+                          <AvatarFallback>{barber.name.split(" ").map((n) => n[0]).join("")}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <h3 className="font-semibold">{barber.name}</h3>
+                          <p className="text-sm text-muted-foreground">{barber.experience} experience</p>
+                          
+                          <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground"><Phone className="h-3 w-3" /><span>{barber.phone}</span></div>
+                          <div className="flex flex-wrap gap-1 mt-2">{barber.specialties.map((s, i) => <Badge key={i} variant="secondary" className="text-xs">{s}</Badge>)}</div>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="outline" onClick={() => { setEditingBarber(barber); setIsEditBarberOpen(true); }}><Edit className="h-3 w-3" /></Button>
+                          <Button size="sm" variant="outline" onClick={() => handleDeleteBarber(barber.id)}><Trash2 className="h-3 w-3" /></Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Dialog open={isAddBarberOpen} onOpenChange={setIsAddBarberOpen}>
+              <DialogContent className="bg-card">
+                <DialogHeader>
+                  <DialogTitle>Add New Staff</DialogTitle>
+                  <DialogDescription>Add a new team member.</DialogDescription>
+                </DialogHeader>
+                <form onSubmit={e => { e.preventDefault(); const fd = new FormData(e.currentTarget); handleAddBarber({ name: fd.get('name') as string, experience: fd.get('experience') as string, phone: fd.get('phone') as string, email: fd.get('email') as string, specialties: (fd.get('specialties') as string).split(',').map(s => s.trim()) }); }} className='space-y-4'>
+                  <div><Label htmlFor='barber-name'>Full Name</Label><Input id='barber-name' name='name' required disabled={isSavingBarber} /></div>
+                  <div><Label htmlFor='experience'>Experience</Label><Input id='experience' name='experience' placeholder='e.g., 5 years' required disabled={isSavingBarber} /></div>
+                  <div className='grid grid-cols-2 gap-4'>
+                    <div><Label htmlFor='barber-phone'>Phone</Label><Input id='barber-phone' name='phone' type='tel' required disabled={isSavingBarber} /></div>
+                    <div><Label htmlFor='barber-email'>Email</Label><Input id='barber-email' name='email' type='email' required disabled={isSavingBarber} /></div>
+                  </div>
+                  <div><Label htmlFor='specialties'>Specialties (comma-separated)</Label><Input id='specialties' name='specialties' placeholder='e.g., Classic Cuts, Fades' disabled={isSavingBarber} /></div>
+                  {barberError && <p className='text-sm text-destructive'>{barberError}</p>}
+                  <Button type='submit' className='w-full' disabled={isSavingBarber}>{isSavingBarber ? <><Loader2 className='h-4 w-4 mr-2 animate-spin' />Saving...</> : 'Add Barber'}</Button>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </motion.div>
+        )}
 
         {/* Edit Barber Dialog */}
         {editingBarber && (

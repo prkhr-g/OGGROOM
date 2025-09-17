@@ -37,7 +37,7 @@ function ShopSchedulePageContent() {
   useEffect(() => {
     const fetchScheduleData = async () => {
       if (!user) {
-        router.push('/auth');
+        // User is not authenticated yet, wait for the user object to be available.
         return;
       }
 
@@ -53,7 +53,6 @@ function ShopSchedulePageContent() {
 
         const bookingsResult = await getShopBookings(profileResult.profile.shop.id);
         if (bookingsResult.error) throw new Error(bookingsResult.error);
-        console.log("Raw bookings data:", bookingsResult.bookings);
 
         const dashboardResult = await getShopOwnerDashboard(profileResult.profile.shop.id);
         if (dashboardResult.error || !dashboardResult.data) throw new Error(dashboardResult.error || 'Failed to fetch dashboard data');
@@ -61,11 +60,9 @@ function ShopSchedulePageContent() {
 
         // Filter for upcoming bookings and map service names
         const upcomingBookings = (bookingsResult.bookings || []).map((booking: any) => {
-          const bookingDateTime = parseISO(`${booking.booking_date}T${booking.booking_time}`);
-          console.log("Booking date-time:", booking.booking_date, booking.booking_time, bookingDateTime);
           const serviceNames = (booking.service_ids || [])
             .map((serviceId: number) => {
-              const service = allServices.find((s: Service) => s.id === serviceId);
+              const service = allServices.find((s: any) => s.id === serviceId);
               return service ? service.name : 'Unknown Service';
             })
             .join(', ');
