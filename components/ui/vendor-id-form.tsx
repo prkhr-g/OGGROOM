@@ -26,12 +26,21 @@ interface VendorIdFormProps {
 export function VendorIdForm({ isOpen, onClose, ownerName, ownerEmail, onSuccess }: VendorIdFormProps) {
   const [phone, setPhone] = useState('');
   const [upiId, setUpiId] = useState('');
+  const [accountHolder, setAccountHolder] = useState(''); // New state
+  const [pan, setPan] = useState(''); // New state
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async () => {
     setIsSaving(true);
     setError('');
+
+    // Basic validation for phone number
+    if (!phone || phone.length < 10) {
+      setError('Please enter a valid 10-digit phone number.');
+      setIsSaving(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/shop-owner/vendor', {
@@ -40,11 +49,13 @@ export function VendorIdForm({ isOpen, onClose, ownerName, ownerEmail, onSuccess
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({
+                body: JSON.stringify({
           name: ownerName,
           email: ownerEmail,
           phone: phone,
           upi_id: upiId,
+          account_holder: accountHolder,
+          pan: pan,
         }),
       });
 
@@ -104,6 +115,28 @@ export function VendorIdForm({ isOpen, onClose, ownerName, ownerEmail, onSuccess
               id="upi_id"
               value={upiId}
               onChange={(e) => setUpiId(e.target.value)}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="account_holder" className="text-right">
+              UPI Account Holder Name
+            </Label>
+            <Input
+              id="account_holder"
+              value={accountHolder}
+              onChange={(e) => setAccountHolder(e.target.value)}
+              className="col-span-3"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="pan" className="text-right">
+              PAN
+            </Label>
+            <Input
+              id="pan"
+              value={pan}
+              onChange={(e) => setPan(e.target.value)}
               className="col-span-3"
             />
           </div>

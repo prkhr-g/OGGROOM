@@ -11,24 +11,45 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { name, email, phone, upi_id, vendor_id } = await request.json();
+    const { upi_id, account_holder, pan } = await request.json();
 
-    const cashfreeRequestBody = {
-      vendor_id: vendor_id,
-      vendor_email: email,
-      vendor_phone: phone,
-      vendor_name: name,
+    // Fetch shop owner details and shop_id for the current user from shop_owners table
+    const { data: shopOwnerDetails, error: fetchShopOwnerError } = await supabase
+      .from('shop_owners')
+      .select('name, email, phone, shop_id, vendor_id') // Added vendor_id
+      .eq('id', user.id) // 'id' in shop_owners table is user.id
+      .single();
+
+    if (fetchShopOwnerError || !shopOwnerDetails) {
+      console.error('Error fetching shop owner details:', fetchShopOwnerError);
+      return NextResponse.json({ success: false, error: 'Shop owner profile not found for the current user.' }, { status: 404 });
+    }
+
+    const { name, email, phone, shop_id, vendor_id } = shopOwnerDetails; // Destructure vendor_id
+    const sanitizedShopId = shop_id.replace(/-/g, '_'); // Replace hyphens with underscores
+
+    // If vendor_id already exists, return it
+    if (vendor_id) {
+      return NextResponse.json({ success: true, vendor_id: vendor_id });
+    }
+
+    const cashfreeRequestBody: any = {
+      vendor_id: sanitizedShopId, // Using sanitizedShopId as vendor_id as per user's instruction
       status: 'ACTIVE',
+      name: name,
+      email: email,
+      phone: phone,
       verify_account: true,
       dashboard_access: true,
-      settlement_cycle_id: 1, // T+1 cycle
+      schedule_option: 1, // Fixed value
+      upi: { // From request body
+        vpa: upi_id,
+        account_holder: account_holder,
+      },
       kyc_details: {
-        account_type: 'BUSINESS',
-        business_type: 'Professional Services',
-        pan: 'TESTP1234A', // Placeholder PAN
-        gst: '11AAAAA1111A1Z0', // Placeholder GST
-        cin: 'L00000Aa0000AaA000000', // Placeholder CIN
-        uidai: '753624181019', // Placeholder UIDAI
+        account_type: 'BUSINESS', // Fixed value
+        business_type: 'Professional Services (Doctors, Lawyers, Architects, CAs, and other Professionals)',// Fixed value
+        pan: pan, // From request body
       },
     };
 
@@ -50,6 +71,37 @@ export async function POST(request: Request) {
       try {
         const errorData = JSON.parse(errorText);
         console.error('Cashfree API Error (Parsed):', errorData);
+
+        // Check if the error is "vendor already exists"
+        if (errorData.message && errorData.message.includes('vendor already exists')) {
+          // If vendor already exists, assume the vendor_id is the sanitizedShopId
+          const existing_vendor_id = sanitizedShopId;
+          console.warn(`Vendor with ID ${existing_vendor_id} already exists in Cashfree. Updating database with this ID.`);
+
+          // Proceed to update shop_owners and shops tables with the existing_vendor_id
+          const { error: ownerError } = await supabase
+            .from('shop_owners')
+            .update({ vendor_id: existing_vendor_id })
+            .eq('id', user.id);
+
+          if (ownerError) {
+            console.error('Error updating shop_owners table with existing vendor ID:', ownerError);
+            return NextResponse.json({ success: false, error: 'Failed to update shop owner profile with existing vendor ID.' }, { status: 500 });
+          }
+
+          const { error: shopError } = await supabase
+            .from('shops')
+            .update({ vendor_id: existing_vendor_id })
+            .eq('id', shop_id);
+
+          if (shopError) {
+            console.error('Error updating shops table with existing vendor ID:', shopError);
+            return NextResponse.json({ success: false, error: 'Failed to update shop profile with existing vendor ID.' }, { status: 500 });
+          }
+
+          return NextResponse.json({ success: true, vendor_id: existing_vendor_id });
+        }
+
         return NextResponse.json({ success: false, error: errorData }, { status: cashfreeResponse.status });
       } catch (parseError) {
         console.error('Failed to parse Cashfree API error response as JSON:', parseError);
@@ -64,7 +116,7 @@ export async function POST(request: Request) {
     const { error: ownerError } = await supabase
       .from('shop_owners')
       .update({ vendor_id: created_vendor_id })
-      .eq('user_id', user.id);
+      .eq('id', user.id); // Corrected to use 'id' column
 
     if (ownerError) {
       console.error('Error updating shop_owners table:', ownerError);
@@ -77,7 +129,7 @@ export async function POST(request: Request) {
     const { error: shopError } = await supabase
       .from('shops')
       .update({ vendor_id: created_vendor_id })
-      .eq('owner_id', user.id);
+      .eq('id', shopId); // Use shopId to update the correct shop
 
     if (shopError) {
       console.error('Error updating shops table:', shopError);

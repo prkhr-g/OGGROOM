@@ -6,6 +6,7 @@ export async function POST(request: Request) {
     const { orderDetails } = await request.json();
     const { orderId, amount, currency, customerDetails, shopId } = orderDetails;
 
+    console.log('Initiating payment for shopId:', shopId); // Added log
     const supabase = createServerClient();
     const { data: shopData, error: shopError } = await supabase
       .from('shops')
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
 
     if (shopError || !shopData) {
       console.error('Error fetching shop data:', shopError);
+      console.error('Shop data:', shopData); // Added log
       return NextResponse.json({ success: false, error: 'Shop not found or error fetching shop details.' }, { status: 404 });
     }
 
@@ -42,7 +44,7 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
         'x-client-id': process.env.CASHFREE_CLIENT_ID as string,
         'x-client-secret': process.env.CASHFREE_CLIENT_SECRET as string,
-        'x-api-version': '2022-09-01',
+        'x-api-version': '2025-01-01',
       },
       body: JSON.stringify(requestBody),
     });
