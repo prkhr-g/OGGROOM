@@ -12,7 +12,9 @@ import { ArrowLeft, Clock, DollarSign, Star, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams, useRouter, useParams } from "next/navigation"
 import { getShopDetailsForCustomer, getAvailableTimeSlots } from "@/lib/profile-actions"
-import { AuthProvider } from "@/components/auth-provider"
+import { AuthProvider, useAuth } from "@/components/auth-provider"
+import { v4 as uuidv4 } from 'uuid';
+
 
 interface Shop {
   id: string
@@ -50,10 +52,14 @@ function BookAppointmentScreenContent() {
   const shopId = params.shopId as string
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { user } = useAuth()
+
 
   const [shop, setShop] = useState<Shop | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+
 
   const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([])
   const [selectedBarberId, setSelectedBarberId] = useState<number | null>(null)
@@ -181,6 +187,52 @@ function BookAppointmentScreenContent() {
     }
     return false;
   };
+
+  const handlePayment = async () => {
+    if (!user || !shop) {
+      setError("You must be logged in to make a payment.");
+      return;
+    }
+    setIsProcessingPayment(true);
+    setError(null);
+    try {
+      const orderId = uuidv4();
+      const orderDetails = {
+        orderId,
+        amount: totalPrice,
+        currency: "INR",
+        customerDetails: {
+          customer_id: user.id,
+          customer_email: user.email,
+          customer_phone: user.phone || "9999999999", // Fallback phone
+        },
+        shopId: shop.id,
+      };
+
+      const response = await fetch('/api/cashfree/initiate-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderDetails }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.payment_session_id) {
+        // Redirect to Cashfree
+        const cashfreeSDK = new (window as any).Cashfree(data.payment_session_id);
+        cashfreeSDK.redirect();
+      } else {
+        throw new Error(data.error?.message || "Failed to initiate payment.");
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
 
   const selectedBarberData = shop?.barbers.find((b) => b.id === selectedBarberId)
   const canProceed = selectedServiceIds.length > 0 && selectedBarberId && selectedDate && selectedTime

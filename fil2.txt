@@ -1,8 +1,6 @@
-Cashfree API Raw Error Response: {"code":"api_request_failed","help":"Check latest errors and resolution from Merchant Dashboard API logs: https://bit.ly/4glEd0W Help Document: https://bit.ly/4eeZYO9","message":"vendor already exists","type":"invalid_request_error"}
-
-Cashfree API Error (Parsed): {
-  code: 'api_request_failed',
-  help: 'Check latest errors and resolution from Merchant Dashboard API logs: https://bit.ly/4glEd0W Help Document: https://bit.ly/4eeZYO9',
-  message: 'vendor already exists',
-  type: 'invalid_request_error'
+Error fetching shop data: {
+  code: '22P02',
+  details: null,
+  hint: null,
+  message: 'invalid input syntax for type uuid: "undefined"'
 }

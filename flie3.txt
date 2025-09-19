@@ -1,0 +1,6 @@
+Cashfree API Error: {
+  code: 'customer_details.customer_phone_missing',      
+  help: 'Check latest errors and resolution from Merchant Dashboard API logs: https://bit.ly/4glEd0W Help Document: https://bit.ly/4eeZYO9',
+  message: 'customer_details.customer_phone : is missing in the request. Value received: ',
+  type: 'invalid_request_error'
+}
