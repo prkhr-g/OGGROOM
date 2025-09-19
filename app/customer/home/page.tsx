@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AnimatedTabsContent } from "@/components/ui/animated-tabs-content"
 
@@ -24,7 +24,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { useEffect, useState, useMemo } from "react"
+import { useEffect, useState, useMemo, useCallback } from "react"
 import { getAllData, getCustomerProfile, getNearbyShops, getAvailableShops } from "@/lib/profile-actions"
 import { getUpcomingBookings, getPreviousBookings } from "@/lib/booking-actions"
 import { useAuth } from "@/components/auth-provider"
@@ -127,6 +127,19 @@ export default function CustomerHomeScreen() {
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const [selectedBookingForReview, setSelectedBookingForReview] = useState<Booking | null>(null);
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
+
+  const fetchBookings = useCallback(async () => {
+    if (!user) return;
+    const [upcomingResult, previousResult] = await Promise.all([
+        getUpcomingBookings(),
+        getPreviousBookings(),
+    ]);
+    if (upcomingResult.error) throw new Error(upcomingResult.error);
+    setUpcomingBookings(upcomingResult.bookings || []);
+    if (previousResult.error) throw new Error(previousResult.error);
+    setPreviousBookings(previousResult.bookings || []);
+  }, [user]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -138,10 +151,9 @@ export default function CustomerHomeScreen() {
         setIsLoading(true);
         setCustomerLocationError(null);
 
-        const [customerProfileResult, upcomingResult, previousResult] = await Promise.all([
+        const [customerProfileResult] = await Promise.all([
           getCustomerProfile(user.id),
-          getUpcomingBookings(),
-          getPreviousBookings(),
+          fetchBookings(),
         ]);
 
         if (customerProfileResult.error) {
@@ -165,13 +177,6 @@ export default function CustomerHomeScreen() {
           if (shopsResult.error) throw new Error(shopsResult.error);
           setNearbyShops(shopsResult.shops || []);
         }
-
-        if (upcomingResult.error) throw new Error(upcomingResult.error);
-        setUpcomingBookings(upcomingResult.bookings || []);
-
-        if (previousResult.error) throw new Error(previousResult.error);
-        setPreviousBookings(previousResult.bookings || []);
-
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -179,7 +184,7 @@ export default function CustomerHomeScreen() {
       }
     };
     fetchInitialData();
-  }, [user]);
+  }, [user, fetchBookings]);
 
   const loadSearchData = async () => {
     if (isSearchDataLoaded) return;
@@ -231,6 +236,26 @@ export default function CustomerHomeScreen() {
       setError(error);
     }
   };
+
+  const handleCancelBooking = async (bookingId: number) => {
+    setCancellingId(bookingId);
+    try {
+        const response = await fetch(`/api/customer/bookings/${bookingId}/cancel`, {
+            method: 'PATCH',
+        });
+        if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || 'Failed to cancel booking.');
+        }
+        // Refresh bookings list
+        await fetchBookings();
+    } catch (err: any) {
+        setError(err.message);
+    } finally {
+        setCancellingId(null);
+    }
+  };
+
 
   if (isLoading) {
     return (
@@ -438,22 +463,28 @@ export default function CustomerHomeScreen() {
                           <Badge>
                             {booking.status}
                           </Badge>
-                          <div className="flex gap-2 w-full sm:w-auto">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="flex-1 sm:flex-none"
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="flex-1 sm:flex-none"
-                            >
-                              Reschedule
-                            </Button>
-                          </div>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                                <Button variant="outline" className="flex-1 sm:flex-none" disabled={cancellingId === booking.id}>
+                                    {cancellingId === booking.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                    Cancel
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Are you sure?</DialogTitle>
+                                    <DialogDescription>
+                                        This action cannot be undone. This will permanently cancel your booking.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <DialogFooter>
+                                    <DialogClose asChild>
+                                        <Button variant="outline">Go Back</Button>
+                                    </DialogClose>
+                                    <Button variant="destructive" onClick={() => handleCancelBooking(booking.id)}>Confirm Cancel</Button>
+                                </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
                         </div>
                       </CardContent>
                     </Card>
