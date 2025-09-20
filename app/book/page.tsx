@@ -1,83 +1,99 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { Suspense, useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Calendar, User, ArrowLeft } from "lucide-react"
-import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { Suspense, useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Calendar, User, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
-import { getShopDetailsForCustomer, getAvailableTimeSlots, createBooking } from "@/lib/profile-actions"
-import { AuthProvider, useAuth } from "@/components/auth-provider"
+import {
+  getShopDetailsForCustomer,
+  getAvailableTimeSlots,
+  createBooking,
+} from "@/lib/profile-actions";
+import { AuthProvider, useAuth } from "@/components/auth-provider";
 
 interface Service {
-  id: number
-  name: string
-  duration: number
-  price: number
+  id: number;
+  name: string;
+  duration: number;
+  price: number;
 }
 
 interface Barber {
-  id: number
-  name: string
+  id: number;
+  name: string;
 }
 
 interface ShopDetails {
-  id: string
-  name: string
-  services: Service[]
-  barbers: Barber[]
+  id: string;
+  name: string;
+  services: Service[];
+  barbers: Barber[];
 }
 
 function BookingPageContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const shopId = searchParams.get("shopId")
-  const { user } = useAuth()
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const shopId = searchParams.get("shopId");
+  const { user } = useAuth();
 
-  const [shop, setShop] = useState<ShopDetails | null>(null)
-  const [selectedService, setSelectedService] = useState<string>("")
-  const [selectedBarber, setSelectedBarber] = useState<string>("")
-  const [selectedDate, setSelectedDate] = useState<string>("")
-  const [selectedTime, setSelectedTime] = useState<string>("")
-  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([])
+  const [shop, setShop] = useState<ShopDetails | null>(null);
+  const [selectedService, setSelectedService] = useState<string>("");
+  const [selectedBarber, setSelectedBarber] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
   const [customerInfo, setCustomerInfo] = useState({
     name: user?.user_metadata?.full_name || "",
     phone: user?.user_metadata?.phone_number || "",
     email: user?.email || "",
     notes: "",
-  })
-  const [isBooked, setIsBooked] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  });
+  const [isBooked, setIsBooked] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!shopId) {
-      setError("Shop ID is missing.")
-      setLoading(false)
-      return
+      setError("Shop ID is missing.");
+      setLoading(false);
+      return;
     }
 
     const fetchShopDetails = async () => {
-      setLoading(true)
-      const { shop, error } = await getShopDetailsForCustomer(shopId)
+      setLoading(true);
+      const { shop, error } = await getShopDetailsForCustomer(shopId);
       if (error) {
-        setError(error)
+        setError(error);
       } else if (shop) {
-        setShop(shop)
-        console.log("Fetched shop data:", shop) // Add this line
+        setShop(shop);
+        console.log("Fetched shop data:", shop); // Add this line
       }
-      setLoading(false)
-    }
-    console.log("Shop ID from URL:", shopId) // Add this line
-    fetchShopDetails()
-  }, [shopId])
+      setLoading(false);
+    };
+    console.log("Shop ID from URL:", shopId); // Add this line
+    fetchShopDetails();
+  }, [shopId]);
 
   useEffect(() => {
     const fetchAvailableSlots = async () => {
@@ -86,24 +102,24 @@ function BookingPageContent() {
           shopId,
           parseInt(selectedBarber),
           selectedDate,
-        )
+        );
         if (error) {
-          setError(error)
-          setAvailableTimeSlots([])
+          setError(error);
+          setAvailableTimeSlots([]);
         } else if (timeSlots) {
-          setAvailableTimeSlots(timeSlots)
+          setAvailableTimeSlots(timeSlots);
         }
       } else {
-        setAvailableTimeSlots([]) // Clear slots if no date or barber is selected
+        setAvailableTimeSlots([]); // Clear slots if no date or barber is selected
       }
-      setSelectedTime("") // Reset selected time when date or barber changes
-    }
+      setSelectedTime(""); // Reset selected time when date or barber changes
+    };
 
-    fetchAvailableSlots()
-  }, [selectedDate, selectedBarber, shopId])
+    fetchAvailableSlots();
+  }, [selectedDate, selectedBarber, shopId]);
 
   const handleBooking = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (
       !user ||
@@ -116,16 +132,16 @@ function BookingPageContent() {
       !customerInfo.phone ||
       !customerInfo.email
     ) {
-      setError("Please fill in all required fields.")
-      return
+      setError("Please fill in all required fields.");
+      return;
     }
 
     const service = shop?.services.find(
       (s) => s.id.toString() === selectedService,
-    )
+    );
     if (!service) {
-      setError("Selected service not found.")
-      return
+      setError("Selected service not found.");
+      return;
     }
 
     const bookingData = {
@@ -137,23 +153,23 @@ function BookingPageContent() {
       booking_time: selectedTime,
       total_price: service.price,
       customer_notes: customerInfo.notes,
-    }
+    };
 
-    const { success, error: bookingError } = await createBooking(bookingData)
+    const { success, error: bookingError } = await createBooking(bookingData);
 
     if (success) {
-      setIsBooked(true)
+      setIsBooked(true);
     } else {
-      setError(bookingError || "Failed to create booking.")
+      setError(bookingError || "Failed to create booking.");
     }
-  }
+  };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p>Loading shop details...</p>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -161,7 +177,7 @@ function BookingPageContent() {
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-red-500">Error: {error}</p>
       </div>
-    )
+    );
   }
 
   if (!shop) {
@@ -169,7 +185,7 @@ function BookingPageContent() {
       <div className="min-h-screen flex items-center justify-center">
         <p>Shop not found.</p>
       </div>
-    )
+    );
   }
 
   if (isBooked) {
@@ -180,13 +196,21 @@ function BookingPageContent() {
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Calendar className="h-8 w-8 text-green-600" />
             </div>
-            <CardTitle className="text-2xl text-green-600">Booking Confirmed!</CardTitle>
-            <CardDescription>Your appointment has been successfully booked</CardDescription>
+            <CardTitle className="text-2xl text-green-600">
+              Booking Confirmed!
+            </CardTitle>
+            <CardDescription>
+              Your appointment has been successfully booked
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="bg-gray-50 p-4 rounded-lg space-y-2">
               <p>
-                <strong>Service:</strong> {shop.services.find((s) => s.id.toString() === selectedService)?.name}
+                <strong>Service:</strong>{" "}
+                {
+                  shop.services.find((s) => s.id.toString() === selectedService)
+                    ?.name
+                }
               </p>
               <p>
                 <strong>Date:</strong> {selectedDate}
@@ -207,7 +231,7 @@ function BookingPageContent() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -235,7 +259,11 @@ function BookingPageContent() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Select value={selectedService} onValueChange={setSelectedService} required>
+              <Select
+                value={selectedService}
+                onValueChange={setSelectedService}
+                required
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Choose a service" />
                 </SelectTrigger>
@@ -259,7 +287,11 @@ function BookingPageContent() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Select value={selectedBarber} onValueChange={setSelectedBarber} required>
+              <Select
+                value={selectedBarber}
+                onValueChange={setSelectedBarber}
+                required
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Choose a Staff" />
                 </SelectTrigger>
@@ -329,7 +361,9 @@ function BookingPageContent() {
                   <Input
                     id="name"
                     value={customerInfo.name}
-                    onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
+                    onChange={(e) =>
+                      setCustomerInfo({ ...customerInfo, name: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -339,7 +373,12 @@ function BookingPageContent() {
                     id="phone"
                     type="tel"
                     value={customerInfo.phone}
-                    onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
+                    onChange={(e) =>
+                      setCustomerInfo({
+                        ...customerInfo,
+                        phone: e.target.value,
+                      })
+                    }
                     required
                   />
                 </div>
@@ -350,7 +389,9 @@ function BookingPageContent() {
                   id="email"
                   type="email"
                   value={customerInfo.email}
-                  onChange={(e) => setCustomerInfo({ ...customerInfo, email: e.target.value })}
+                  onChange={(e) =>
+                    setCustomerInfo({ ...customerInfo, email: e.target.value })
+                  }
                   required
                 />
               </div>
@@ -360,7 +401,9 @@ function BookingPageContent() {
                   id="notes"
                   placeholder="Any special requests or notes for your Staff..."
                   value={customerInfo.notes}
-                  onChange={(e) => setCustomerInfo({ ...customerInfo, notes: e.target.value })}
+                  onChange={(e) =>
+                    setCustomerInfo({ ...customerInfo, notes: e.target.value })
+                  }
                 />
               </div>
             </CardContent>
@@ -375,10 +418,20 @@ function BookingPageContent() {
               {selectedService && selectedDate && selectedTime ? (
                 <div className="bg-blue-50 p-4 rounded-lg space-y-2 mb-4">
                   <p>
-                    <strong>Service:</strong> {shop?.services.find((s) => s.id.toString() === selectedService)?.name}
+                    <strong>Service:</strong>{" "}
+                    {
+                      shop?.services.find(
+                        (s) => s.id.toString() === selectedService,
+                      )?.name
+                    }
                   </p>
                   <p>
-                    <strong>Staff:</strong> {shop?.barbers.find((b) => b.id.toString() === selectedBarber)?.name}
+                    <strong>Staff:</strong>{" "}
+                    {
+                      shop?.barbers.find(
+                        (b) => b.id.toString() === selectedBarber,
+                      )?.name
+                    }
                   </p>
                   <p>
                     <strong>Date:</strong> {selectedDate}
@@ -387,14 +440,27 @@ function BookingPageContent() {
                     <strong>Time:</strong> {selectedTime}
                   </p>
                   <p>
-                    <strong>Duration:</strong> {shop?.services.find((s) => s.id.toString() === selectedService)?.duration} min
+                    <strong>Duration:</strong>{" "}
+                    {
+                      shop?.services.find(
+                        (s) => s.id.toString() === selectedService,
+                      )?.duration
+                    }{" "}
+                    min
                   </p>
                   <p>
-                    <strong>Price:</strong> ₹{shop?.services.find((s) => s.id.toString() === selectedService)?.price}
+                    <strong>Price:</strong> ₹
+                    {
+                      shop?.services.find(
+                        (s) => s.id.toString() === selectedService,
+                      )?.price
+                    }
                   </p>
                 </div>
               ) : (
-                <p className="text-gray-500 mb-4">Please select service, date, and time to see booking summary</p>
+                <p className="text-gray-500 mb-4">
+                  Please select service, date, and time to see booking summary
+                </p>
               )}
               <Button
                 type="submit"
@@ -416,7 +482,7 @@ function BookingPageContent() {
         </form>
       </div>
     </div>
-  )
+  );
 }
 
 export default function BookingPage() {
@@ -424,5 +490,5 @@ export default function BookingPage() {
     <Suspense fallback={<div>Loading...</div>}>
       <BookingPageContent />
     </Suspense>
-  )
+  );
 }

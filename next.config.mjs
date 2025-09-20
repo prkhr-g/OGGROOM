@@ -9,12 +9,12 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-}
+};
 
-import nextBundleAnalyzer from '@next/bundle-analyzer'
+import nextBundleAnalyzer from "@next/bundle-analyzer";
 
 const withBundleAnalyzer = nextBundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
-})
+  enabled: process.env.ANALYZE === "true",
+});
 
-export default withBundleAnalyzer(nextConfig)
+export default withBundleAnalyzer(nextConfig);

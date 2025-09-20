@@ -1,9 +1,15 @@
-'use client'
+"use client";
 
-import { TabsContent } from "@/components/ui/tabs"
-import { motion } from "framer-motion"
+import { TabsContent } from "@/components/ui/tabs";
+import { motion } from "framer-motion";
 
-export const AnimatedTabsContent = ({ value, children }: { value: string, children: React.ReactNode }) => {
+export const AnimatedTabsContent = ({
+  value,
+  children,
+}: {
+  value: string;
+  children: React.ReactNode;
+}) => {
   return (
     <TabsContent value={value} asChild>
       <motion.div
@@ -16,5 +22,5 @@ export const AnimatedTabsContent = ({ value, children }: { value: string, childr
         {children}
       </motion.div>
     </TabsContent>
-  )
-}
+  );
+};

@@ -1,16 +1,27 @@
-"use client"
+"use client";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface ErrorModalProps {
-  isOpen: boolean
-  onClose: () => void
-  title: string
-  description: string
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  description: string;
 }
 
-export const ErrorModal: React.FC<ErrorModalProps> = ({ isOpen, onClose, title, description }) => {
+export const ErrorModal: React.FC<ErrorModalProps> = ({
+  isOpen,
+  onClose,
+  title,
+  description,
+}) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
@@ -23,5 +34,5 @@ export const ErrorModal: React.FC<ErrorModalProps> = ({ isOpen, onClose, title, 
         </div>
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};

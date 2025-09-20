@@ -1,83 +1,88 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { ArrowLeft, Mail, Loader2, CheckCircle } from "lucide-react"
-import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
-import { verifyOTP, resendOTP } from "@/lib/auth-supabase"
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, Mail, Loader2, CheckCircle } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { verifyOTP, resendOTP } from "@/lib/auth-supabase";
 
 export default function VerifyOTPScreen() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const email = searchParams.get("email") || ""
-  const userType = searchParams.get("type") || "customer"
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") || "";
+  const userType = searchParams.get("type") || "customer";
 
-  const [otp, setOtp] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [isResending, setIsResending] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
-  const [countdown, setCountdown] = useState(0)
-  const [showAccountExistsMessage, setShowAccountExistsMessage] = useState(false);
-  
-  
+  const [otp, setOtp] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [countdown, setCountdown] = useState(0);
+  const [showAccountExistsMessage, setShowAccountExistsMessage] =
+    useState(false);
 
   // Countdown timer for resend button
   useEffect(() => {
     if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
-      return () => clearTimeout(timer)
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
     }
-  }, [countdown])
+  }, [countdown]);
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
-    setSuccess("")
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+    setSuccess("");
 
     if (otp.length !== 6) {
-      setError("Please enter a valid 6-digit code")
-      setIsLoading(false)
-      return
+      setError("Please enter a valid 6-digit code");
+      setIsLoading(false);
+      return;
     }
 
     try {
-      const result = await verifyOTP(email, otp)
+      const result = await verifyOTP(email, otp);
 
       if (result.error) {
-        setError(result.error)
+        setError(result.error);
       } else {
-        setSuccess("Email verified successfully! Redirecting...")
+        setSuccess("Email verified successfully! Redirecting...");
         setTimeout(() => {
           if (userType === "customer") {
-            router.push("/customer/home")
+            router.push("/customer/home");
           } else {
-            router.push("/shop-owner/dashboard")
+            router.push("/shop-owner/dashboard");
           }
-        }, 2000)
+        }, 2000);
       }
     } catch (error) {
-      setError("An error occurred during verification")
+      setError("An error occurred during verification");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleResendOTP = async () => {
-    setIsResending(true)
-    setError("") // Clear previous errors
-    setSuccess("") // Clear previous success messages
+    setIsResending(true);
+    setError(""); // Clear previous errors
+    setSuccess(""); // Clear previous success messages
     setShowAccountExistsMessage(false); // Clear previous "account exists" message
 
     try {
-      const result = await resendOTP(email)
+      const result = await resendOTP(email);
 
       // Always show the "Account already exists" message if the button is clicked
       // This overrides any other success message
@@ -117,7 +122,7 @@ export default function VerifyOTPScreen() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -138,7 +143,6 @@ export default function VerifyOTPScreen() {
               ) : (
                 <Mail className="h-8 w-8 text-blue-600" />
               )}
-              
             </div>
 
             <CardTitle className="text-2xl">Verify Your Email</CardTitle>
@@ -147,17 +151,20 @@ export default function VerifyOTPScreen() {
               <strong>{email}</strong>
             </CardDescription>
           </CardHeader>
-              {showAccountExistsMessage && (
-                <div className="mb-4 p-3 mx-5 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
-                  Account already exists, please login with your credentials.
-                </div>
-              )}
+          {showAccountExistsMessage && (
+            <div className="mb-4 p-3 mx-5 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
+              Account already exists, please login with your credentials.
+            </div>
+          )}
           {/* <CardContent> */}
-           <CardContent>
-              {error && <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>}
+          <CardContent>
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                {error}
+              </div>
+            )}
 
-
-              {/* <form onSubmit={handleVerifyOTP} className="space-y-4"></form> */}
+            {/* <form onSubmit={handleVerifyOTP} className="space-y-4"></form> */}
 
             <form onSubmit={handleVerifyOTP} className="space-y-4">
               <div className="space-y-2">
@@ -168,8 +175,8 @@ export default function VerifyOTPScreen() {
                   placeholder="Enter 6-digit code"
                   value={otp}
                   onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, "").slice(0, 6)
-                    setOtp(value)
+                    const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+                    setOtp(value);
                   }}
                   maxLength={6}
                   className="text-center text-lg tracking-widest"
@@ -177,7 +184,11 @@ export default function VerifyOTPScreen() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading || otp.length !== 6}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isLoading || otp.length !== 6}
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -190,7 +201,9 @@ export default function VerifyOTPScreen() {
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600 mb-2">Didn't receive the code?</p>
+              <p className="text-sm text-gray-600 mb-2">
+                Didn't receive the code?
+              </p>
               <Button
                 variant="outline"
                 onClick={handleResendOTP}
@@ -217,5 +230,5 @@ export default function VerifyOTPScreen() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

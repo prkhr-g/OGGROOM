@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { AuthProvider } from '@/components/auth-provider';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { AuthProvider } from "@/components/auth-provider";
 
 interface Review {
   id: number;
@@ -31,9 +31,9 @@ function AnalyticsPageContent() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await fetch('/api/shop-owner/analytics');
+        const response = await fetch("/api/shop-owner/analytics");
         if (!response.ok) {
-          throw new Error('Failed to fetch data');
+          throw new Error("Failed to fetch data");
         }
         const data = await response.json();
         setReviews(data.reviews || []);
@@ -65,23 +65,29 @@ function AnalyticsPageContent() {
     return <p className="text-red-500">{error}</p>;
   }
 
-  const averageRating = reviews.length > 0
-    ? (reviews.reduce((acc, review) => acc + review.rating, 0) / reviews.length).toFixed(1)
-    : 'N/A';
+  const averageRating =
+    reviews.length > 0
+      ? (
+          reviews.reduce((acc, review) => acc + review.rating, 0) /
+          reviews.length
+        ).toFixed(1)
+      : "N/A";
 
-  const totalRevenue = bookings.reduce((acc, booking) => acc + booking.total_price, 0);
+  const totalRevenue = bookings.reduce(
+    (acc, booking) => acc + booking.total_price,
+    0,
+  );
 
   const getRevenueLastNMonths = (months: number) => {
     const lastNMonths = new Date();
     lastNMonths.setMonth(lastNMonths.getMonth() - months);
     return bookings
-      .filter(b => new Date(b.created_at) > lastNMonths)
+      .filter((b) => new Date(b.created_at) > lastNMonths)
       .reduce((acc, booking) => acc + booking.total_price, 0);
   };
 
-  const averageRevenuePerBooking = bookings.length > 0
-    ? (totalRevenue / bookings.length).toFixed(2)
-    : 'N/A';
+  const averageRevenuePerBooking =
+    bookings.length > 0 ? (totalRevenue / bookings.length).toFixed(2) : "N/A";
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -91,10 +97,12 @@ function AnalyticsPageContent() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <h1 className="text-2xl font-bold text-foreground">Analytics Dashboard</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            Analytics Dashboard
+          </h1>
         </div>
       </header>
-      
+
       <div className="max-w-6xl mx-auto mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader>
@@ -109,7 +117,9 @@ function AnalyticsPageContent() {
             <CardTitle>Revenue (Last Month)</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold">₹{getRevenueLastNMonths(1).toFixed(2)}</p>
+            <p className="text-4xl font-bold">
+              ₹{getRevenueLastNMonths(1).toFixed(2)}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -157,5 +167,5 @@ export default function AnalyticsPage() {
     <AuthProvider>
       <AnalyticsPageContent />
     </AuthProvider>
-  )
+  );
 }

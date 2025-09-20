@@ -1,50 +1,85 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Mail, Phone, MapPin, Calendar, Edit, Save, X, Loader2, Scissors } from "lucide-react"
-import { GoogleMapsProvider } from "@/components/google-maps-loader"
-import dynamic from "next/dynamic"
-import Link from "next/link"
-import Image from "next/image"
-import { AuthProvider, useAuth } from "@/components/auth-provider"
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import {
+  ArrowLeft,
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  Edit,
+  Save,
+  X,
+  Loader2,
+  Scissors,
+} from "lucide-react";
+import { GoogleMapsProvider } from "@/components/google-maps-loader";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import Image from "next/image";
+import { AuthProvider, useAuth } from "@/components/auth-provider";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
-import { updateCustomerProfile, getCustomerProfile } from "@/lib/profile-actions"
+import {
+  updateCustomerProfile,
+  getCustomerProfile,
+} from "@/lib/profile-actions";
 import { useRouter } from "next/navigation";
 
-const AddressAutocompleteInput = dynamic(() => import('@/components/ui/address-autocomplete-input').then(mod => mod.AddressAutocompleteInput), { ssr: false, loading: () => <Loader2 className='h-8 w-8 animate-spin text-primary' /> });
+const AddressAutocompleteInput = dynamic(
+  () =>
+    import("@/components/ui/address-autocomplete-input").then(
+      (mod) => mod.AddressAutocompleteInput,
+    ),
+  {
+    ssr: false,
+    loading: () => <Loader2 className="h-8 w-8 animate-spin text-primary" />,
+  },
+);
 
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface CustomerProfile {
-  id: string
-  name: string
-  email: string
-  age: number
-  sex: string
-  phone: string
-  location: string
+  id: string;
+  name: string;
+  email: string;
+  age: number;
+  sex: string;
+  phone: string;
+  location: string;
   latitude: number | null;
   longitude: number | null;
-  created_at: string
+  created_at: string;
 }
 
 function CustomerProfilePageContent() {
-  const { user } = useAuth()
-  const router = useRouter()
+  const { user } = useAuth();
+  const router = useRouter();
   const supabase = createClientComponentClient();
-  const [profile, setProfile] = useState<CustomerProfile | null>(null)
-  const [isEditing, setIsEditing] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
+  const [profile, setProfile] = useState<CustomerProfile | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const [editData, setEditData] = useState({
     name: "",
@@ -54,23 +89,23 @@ function CustomerProfilePageContent() {
     location: "",
     latitude: null as number | null,
     longitude: null as number | null,
-  })
+  });
 
   useEffect(() => {
     if (user) {
-      loadProfile()
+      loadProfile();
     }
-  }, [user])
+  }, [user]);
 
   const loadProfile = async () => {
     try {
-      setIsLoading(true)
-      const result = await getCustomerProfile(user!.id)
+      setIsLoading(true);
+      const result = await getCustomerProfile(user!.id);
 
       if (result.error) {
-        setError(result.error)
+        setError(result.error);
       } else if (result.profile) {
-        setProfile(result.profile)
+        setProfile(result.profile);
         setEditData({
           name: result.profile.name,
           age: result.profile.age.toString(),
@@ -79,20 +114,20 @@ function CustomerProfilePageContent() {
           location: result.profile.location,
           latitude: result.profile.latitude || null,
           longitude: result.profile.longitude || null,
-        })
+        });
       }
     } catch (error) {
-      setError("Failed to load profile")
+      setError("Failed to load profile");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleSave = async () => {
     try {
-      setIsSaving(true)
-      setError("")
-      setSuccess("")
+      setIsSaving(true);
+      setError("");
+      setSuccess("");
 
       const result = await updateCustomerProfile(user!.id, {
         name: editData.name,
@@ -102,22 +137,22 @@ function CustomerProfilePageContent() {
         location: editData.location,
         latitude: editData.latitude,
         longitude: editData.longitude,
-      })
+      });
 
       if (result.error) {
-        setError(result.error)
+        setError(result.error);
       } else {
-        setSuccess("Profile updated successfully!")
-        setIsEditing(false)
-        await loadProfile() // Reload profile data
-        setTimeout(() => setSuccess(""), 3000)
+        setSuccess("Profile updated successfully!");
+        setIsEditing(false);
+        await loadProfile(); // Reload profile data
+        setTimeout(() => setSuccess(""), 3000);
       }
     } catch (error) {
-      setError("Failed to update profile")
+      setError("Failed to update profile");
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const handleCancel = () => {
     if (profile) {
@@ -129,15 +164,15 @@ function CustomerProfilePageContent() {
         location: profile.location,
         latitude: profile.latitude || null,
         longitude: profile.longitude || null,
-      })
+      });
     }
-    setIsEditing(false)
-    setError("")
-  }
+    setIsEditing(false);
+    setError("");
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push('/');
+    router.push("/");
   };
 
   if (isLoading) {
@@ -205,7 +240,7 @@ function CustomerProfilePageContent() {
           </div>
         </main>
       </div>
-    )
+    );
   }
 
   if (!profile) {
@@ -220,7 +255,7 @@ function CustomerProfilePageContent() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -230,27 +265,47 @@ function CustomerProfilePageContent() {
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/customer/home">
-              <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-primary"
+              >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back
               </Button>
             </Link>
             {user?.is_shop_owner && ( // Assuming user.is_shop_owner exists
               <Link href="/shop-owner/dashboard">
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground hover:text-primary"
+                >
                   Dashboard
                 </Button>
               </Link>
             )}
             <div className="ml-2 flex items-center gap-2">
-              <Image src="/logo.png" alt="OGGroom Logo" width={30} height={30} />
-              <span className="text-xl font-bold text-foreground">My Profile</span>
+              <Image
+                src="/logo.png"
+                alt="OGGroom Logo"
+                width={30}
+                height={30}
+              />
+              <span className="text-xl font-bold text-foreground">
+                My Profile
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant='destructive' size='sm' onClick={handleLogout}>Logout</Button>
+            <Button variant="destructive" size="sm" onClick={handleLogout}>
+              Logout
+            </Button>
             <Avatar className="h-9 w-9">
-              <AvatarImage src="/placeholder.svg?height=36&width=36" alt="User Avatar" />
+              <AvatarImage
+                src="/placeholder.svg?height=36&width=36"
+                alt="User Avatar"
+              />
               <AvatarFallback>{profile.name.charAt(0)}</AvatarFallback>
             </Avatar>
           </div>
@@ -265,11 +320,18 @@ function CustomerProfilePageContent() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <Avatar className="w-20 h-20">
-                    <AvatarImage src="/placeholder.svg?height=80&width=80" alt="Profile Picture" />
-                    <AvatarFallback className="text-2xl">{profile.name.charAt(0)}</AvatarFallback>
+                    <AvatarImage
+                      src="/placeholder.svg?height=80&width=80"
+                      alt="Profile Picture"
+                    />
+                    <AvatarFallback className="text-2xl">
+                      {profile.name.charAt(0)}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
-                    <CardTitle className="text-2xl text-foreground">{profile.name}</CardTitle>
+                    <CardTitle className="text-2xl text-foreground">
+                      {profile.name}
+                    </CardTitle>
                     <CardDescription className="flex items-center gap-1 mt-1 text-muted-foreground">
                       <Mail className="h-4 w-4" />
                       {profile.email}
@@ -277,47 +339,69 @@ function CustomerProfilePageContent() {
                   </div>
                 </div>
                 {!isEditing && (
-                  <Button className="mb-6 px-3" onClick={() => setIsEditing(true)} variant="outline">
+                  <Button
+                    className="mb-6 px-3"
+                    onClick={() => setIsEditing(true)}
+                    variant="outline"
+                  >
                     <Edit className="h-4 w-4" />
-                    
                   </Button>
                 )}
               </div>
             </CardHeader>
 
             <CardContent className="space-y-6">
-              {error && <div className="p-3 bg-destructive border border-destructive text-destructive-foreground rounded">{error}</div>}
+              {error && (
+                <div className="p-3 bg-destructive border border-destructive text-destructive-foreground rounded">
+                  {error}
+                </div>
+              )}
               {success && (
-                <div className="p-3 bg-accent border-accent text-accent-foreground rounded">{success}</div>
+                <div className="p-3 bg-accent border-accent text-accent-foreground rounded">
+                  {success}
+                </div>
               )}
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="name" className="text-sm font-medium text-muted-foreground">
+                    <Label
+                      htmlFor="name"
+                      className="text-sm font-medium text-muted-foreground"
+                    >
                       Full Name
                     </Label>
                     {isEditing ? (
                       <Input
                         id="name"
                         value={editData.name}
-                        onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                        onChange={(e) =>
+                          setEditData({ ...editData, name: e.target.value })
+                        }
                         className="mt-1"
                       />
                     ) : (
-                      <p className="mt-1 text-sm text-foreground">{profile.name}</p>
+                      <p className="mt-1 text-sm text-foreground">
+                        {profile.name}
+                      </p>
                     )}
                   </div>
 
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Email</Label>
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      Email
+                    </Label>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {profile.email} <span className="text-xs">(Cannot be changed)</span>
+                      {profile.email}{" "}
+                      <span className="text-xs">(Cannot be changed)</span>
                     </p>
                   </div>
 
                   <div>
-                    <Label htmlFor="age" className="text-sm font-medium text-muted-foreground">
+                    <Label
+                      htmlFor="age"
+                      className="text-sm font-medium text-muted-foreground"
+                    >
                       Age
                     </Label>
                     {isEditing ? (
@@ -325,23 +409,35 @@ function CustomerProfilePageContent() {
                         id="age"
                         type="number"
                         value={editData.age}
-                        onChange={(e) => setEditData({ ...editData, age: e.target.value })}
+                        onChange={(e) =>
+                          setEditData({ ...editData, age: e.target.value })
+                        }
                         className="mt-1"
                         min="1"
                       />
                     ) : (
-                      <p className="mt-1 text-sm text-foreground">{profile.age} years old</p>
+                      <p className="mt-1 text-sm text-foreground">
+                        {profile.age} years old
+                      </p>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="sex" className="text-sm font-medium text-muted-foreground">
+                    <Label
+                      htmlFor="sex"
+                      className="text-sm font-medium text-muted-foreground"
+                    >
                       Sex
                     </Label>
                     {isEditing ? (
-                      <Select value={editData.sex} onValueChange={(value) => setEditData({ ...editData, sex: value })}>
+                      <Select
+                        value={editData.sex}
+                        onValueChange={(value) =>
+                          setEditData({ ...editData, sex: value })
+                        }
+                      >
                         <SelectTrigger className="mt-1">
                           <SelectValue />
                         </SelectTrigger>
@@ -352,12 +448,17 @@ function CustomerProfilePageContent() {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <p className="mt-1 text-sm text-foreground capitalize">{profile.sex}</p>
+                      <p className="mt-1 text-sm text-foreground capitalize">
+                        {profile.sex}
+                      </p>
                     )}
                   </div>
 
                   <div>
-                    <Label htmlFor="phone" className="text-sm font-medium text-muted-foreground">
+                    <Label
+                      htmlFor="phone"
+                      className="text-sm font-medium text-muted-foreground"
+                    >
                       Phone Number
                     </Label>
                     {isEditing ? (
@@ -365,7 +466,9 @@ function CustomerProfilePageContent() {
                         id="phone"
                         type="tel"
                         value={editData.phone}
-                        onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
+                        onChange={(e) =>
+                          setEditData({ ...editData, phone: e.target.value })
+                        }
                         className="mt-1"
                       />
                     ) : (
@@ -382,7 +485,14 @@ function CustomerProfilePageContent() {
                         id="location"
                         label="Location"
                         value={editData.location}
-                        onChange={(address, lat, lng) => setEditData({ ...editData, location: address, latitude: lat, longitude: lng })}
+                        onChange={(address, lat, lng) =>
+                          setEditData({
+                            ...editData,
+                            location: address,
+                            latitude: lat,
+                            longitude: lng,
+                          })
+                        }
                         disabled={!isEditing}
                       />
                     </GoogleMapsProvider>
@@ -394,15 +504,25 @@ function CustomerProfilePageContent() {
                 <>
                   <Separator />
                   <div className="flex gap-3 justify-end">
-                    <Button variant="outline" onClick={handleCancel} disabled={isSaving}>
+                    <Button
+                      variant="outline"
+                      onClick={handleCancel}
+                      disabled={isSaving}
+                    >
                       <X className="h-4 w-4 mr-2" />
                       Cancel
                     </Button>
                     <Button onClick={handleSave} disabled={isSaving}>
                       {isSaving ? (
-                        <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving...</>
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Saving...
+                        </>
                       ) : (
-                        <><Save className="h-4 w-4 mr-2" />Save Changes</>
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Changes
+                        </>
                       )}
                     </Button>
                   </div>
@@ -421,7 +541,10 @@ function CustomerProfilePageContent() {
             </CardHeader>
             <CardContent>
               <div className="text-sm text-muted-foreground">
-                <p>Member since: {new Date(profile.created_at).toLocaleDateString()}</p>
+                <p>
+                  Member since:{" "}
+                  {new Date(profile.created_at).toLocaleDateString()}
+                </p>
                 <p className="mt-1">Account ID: {profile.id}</p>
               </div>
             </CardContent>
@@ -429,7 +552,7 @@ function CustomerProfilePageContent() {
         </div>
       </main>
     </div>
-  )
+  );
 }
 
 export default function CustomerProfilePageWithAuth() {
@@ -437,5 +560,5 @@ export default function CustomerProfilePageWithAuth() {
     <AuthProvider>
       <CustomerProfilePageContent />
     </AuthProvider>
-  )
+  );
 }

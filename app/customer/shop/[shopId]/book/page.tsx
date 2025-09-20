@@ -1,121 +1,140 @@
-"use client"
+"use client";
 
-import { useState, useEffect, useMemo, useRef } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Calendar } from "@/components/ui/calendar"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { ArrowLeft, Clock, DollarSign, Star, Loader2 } from "lucide-react"
-import Link from "next/link"
-import { useSearchParams, useRouter, useParams } from "next/navigation"
-import { getShopDetailsForCustomer, getAvailableTimeSlots } from "@/lib/profile-actions"
-import { AuthProvider, useAuth } from "@/components/auth-provider"
-import { v4 as uuidv4 } from 'uuid';
-
+import { useState, useEffect, useMemo, useRef } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { ArrowLeft, Clock, DollarSign, Star, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams, useRouter, useParams } from "next/navigation";
+import {
+  getShopDetailsForCustomer,
+  getAvailableTimeSlots,
+} from "@/lib/profile-actions";
+import { AuthProvider, useAuth } from "@/components/auth-provider";
+import { v4 as uuidv4 } from "uuid";
 
 interface Shop {
-  id: string
-  name: string
-  type: string
-  email: string
-  phone: string
-  address: string
-  is_open: boolean
-  opening_time: string
-  closing_time: string
-  services: Service[]
-  barbers: Barber[]
+  id: string;
+  name: string;
+  type: string;
+  email: string;
+  phone: string;
+  address: string;
+  is_open: boolean;
+  opening_time: string;
+  closing_time: string;
+  services: Service[];
+  barbers: Barber[];
 }
 
 interface Service {
-  id: number
-  name: string
-  duration: number
-  price: number
-  description: string
+  id: number;
+  name: string;
+  duration: number;
+  price: number;
+  description: string;
 }
 
 interface Barber {
-  id: number
-  name: string
-  specialties: string[]
-  experience: string
-  phone: string
-  email: string
+  id: number;
+  name: string;
+  specialties: string[];
+  experience: string;
+  phone: string;
+  email: string;
 }
 
 function BookAppointmentScreenContent() {
-  const params = useParams()
-  const shopId = params.shopId as string
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const { user } = useAuth()
+  const params = useParams();
+  const shopId = params.shopId as string;
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { user } = useAuth();
 
+  const [shop, setShop] = useState<Shop | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
-  const [shop, setShop] = useState<Shop | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+  const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([]);
+  const [selectedBarberId, setSelectedBarberId] = useState<number | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date(),
+  );
+  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
+  const [bookedSlots, setBookedSlots] = useState<
+    { start: string; end: string }[]
+  >([]);
+  const [isFetchingSlots, setIsFetchingSlots] = useState(false);
 
-
-  const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>([])
-  const [selectedBarberId, setSelectedBarberId] = useState<number | null>(null)
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
-  const [selectedTime, setSelectedTime] = useState<string>("")
-  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([])
-  const [bookedSlots, setBookedSlots] = useState<{ start: string; end: string }[]>([])
-  const [isFetchingSlots, setIsFetchingSlots] = useState(false)
-
-  const barberRef = useRef<HTMLDivElement>(null)
-  const calendarRef = useRef<HTMLDivElement>(null)
-  const timeRef = useRef<HTMLDivElement>(null)
+  const barberRef = useRef<HTMLDivElement>(null);
+  const calendarRef = useRef<HTMLDivElement>(null);
+  const timeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchShopDetails = async () => {
-      if (!shopId) return
+      if (!shopId) return;
       try {
-        setIsLoading(true)
-        const result = await getShopDetailsForCustomer(shopId)
+        setIsLoading(true);
+        const result = await getShopDetailsForCustomer(shopId);
         if (result.error) {
-          throw new Error(result.error)
+          throw new Error(result.error);
         }
-        setShop(result.shop)
+        setShop(result.shop);
 
         // Initialize selected services from URL query params
-        const serviceIdsFromQuery = searchParams.get("services")
+        const serviceIdsFromQuery = searchParams.get("services");
         if (serviceIdsFromQuery) {
-          setSelectedServiceIds(serviceIdsFromQuery.split(",").map(Number))
+          setSelectedServiceIds(serviceIdsFromQuery.split(",").map(Number));
         }
-
       } catch (err: any) {
-        setError(err.message)
+        setError(err.message);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
-    fetchShopDetails()
-  }, [shopId, searchParams])
+    };
+    fetchShopDetails();
+  }, [shopId, searchParams]);
 
   const handleServiceToggle = (serviceId: number) => {
     setSelectedServiceIds((prev) =>
-      prev.includes(serviceId) ? prev.filter((id) => id !== serviceId) : [...prev, serviceId],
-    )
-  }
+      prev.includes(serviceId)
+        ? prev.filter((id) => id !== serviceId)
+        : [...prev, serviceId],
+    );
+  };
 
   const selectedServicesDetails = useMemo(() => {
-    return shop?.services.filter((s) => selectedServiceIds.includes(s.id)) || []
-  }, [selectedServiceIds, shop?.services])
+    return (
+      shop?.services.filter((s) => selectedServiceIds.includes(s.id)) || []
+    );
+  }, [selectedServiceIds, shop?.services]);
 
   const totalPrice = useMemo(() => {
-    return selectedServicesDetails.reduce((sum, service) => sum + service.price, 0)
-  }, [selectedServicesDetails])
+    return selectedServicesDetails.reduce(
+      (sum, service) => sum + service.price,
+      0,
+    );
+  }, [selectedServicesDetails]);
 
   const totalDuration = useMemo(() => {
-    return selectedServicesDetails.reduce((sum, service) => sum + service.duration, 0)
-  }, [selectedServicesDetails])
+    return selectedServicesDetails.reduce(
+      (sum, service) => sum + service.duration,
+      0,
+    );
+  }, [selectedServicesDetails]);
 
   useEffect(() => {
     const fetchTimeSlots = async () => {
@@ -123,8 +142,13 @@ function BookAppointmentScreenContent() {
         setIsFetchingSlots(true);
         setError(null);
         try {
-          const formattedDate = selectedDate.toISOString().split('T')[0];
-          const result = await getAvailableTimeSlots(shopId, selectedBarberId, formattedDate, totalDuration);
+          const formattedDate = selectedDate.toISOString().split("T")[0];
+          const result = await getAvailableTimeSlots(
+            shopId,
+            selectedBarberId,
+            formattedDate,
+            totalDuration,
+          );
           if (result.error) {
             throw new Error(result.error);
           }
@@ -161,20 +185,24 @@ function BookAppointmentScreenContent() {
   }, [selectedDate]);
 
   const formatDuration = (minutes: number) => {
-    if (minutes < 60) return `${minutes} min`
-    const h = Math.floor(minutes / 60)
-    const m = minutes % 60
-    return `${h}h${m > 0 ? ` ${m}min` : ""}`
-  }
+    if (minutes < 60) return `${minutes} min`;
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return `${h}h${m > 0 ? ` ${m}min` : ""}`;
+  };
 
   const isSlotBooked = (time: string) => {
-    const [slotHour, slotMinute] = time.split(':').map(Number);
+    const [slotHour, slotMinute] = time.split(":").map(Number);
     const slotStart = new Date();
     slotStart.setHours(slotHour, slotMinute, 0, 0);
 
     for (const booked of bookedSlots) {
-      const [bookedStartHour, bookedStartMinute] = booked.start.split(':').map(Number);
-      const [bookedEndHour, bookedEndMinute] = booked.end.split(':').map(Number);
+      const [bookedStartHour, bookedStartMinute] = booked.start
+        .split(":")
+        .map(Number);
+      const [bookedEndHour, bookedEndMinute] = booked.end
+        .split(":")
+        .map(Number);
 
       const bookedStartTime = new Date();
       bookedStartTime.setHours(bookedStartHour, bookedStartMinute, 0, 0);
@@ -209,10 +237,10 @@ function BookAppointmentScreenContent() {
         shopId: shop.id,
       };
 
-      const response = await fetch('/api/cashfree/initiate-payment', {
-        method: 'POST',
+      const response = await fetch("/api/cashfree/initiate-payment", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ orderDetails }),
       });
@@ -221,7 +249,9 @@ function BookAppointmentScreenContent() {
 
       if (data.success && data.payment_session_id) {
         // Redirect to Cashfree
-        const cashfreeSDK = new (window as any).Cashfree(data.payment_session_id);
+        const cashfreeSDK = new (window as any).Cashfree(
+          data.payment_session_id,
+        );
         cashfreeSDK.redirect();
       } else {
         throw new Error(data.error?.message || "Failed to initiate payment.");
@@ -233,43 +263,52 @@ function BookAppointmentScreenContent() {
     }
   };
 
-
-  const selectedBarberData = shop?.barbers.find((b) => b.id === selectedBarberId)
-  const canProceed = selectedServiceIds.length > 0 && selectedBarberId && selectedDate && selectedTime
+  const selectedBarberData = shop?.barbers.find(
+    (b) => b.id === selectedBarberId,
+  );
+  const canProceed =
+    selectedServiceIds.length > 0 &&
+    selectedBarberId &&
+    selectedDate &&
+    selectedTime;
 
   if (isLoading) {
     return (
-      <div className='min-h-screen bg-background flex items-center justify-center'>
-        <Loader2 className='h-8 w-8 animate-spin text-primary' />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
-    )
+    );
   }
 
   if (error) {
     return (
-      <div className='min-h-screen bg-background flex items-center justify-center'>
-        <Card className='max-w-md w-full bg-card'>
-          <CardHeader><CardTitle>Error</CardTitle></CardHeader>
-          <CardContent className='p-6 text-center'>
-            <p className='text-destructive mb-4'>{error}</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="max-w-md w-full bg-card">
+          <CardHeader>
+            <CardTitle>Error</CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 text-center">
+            <p className="text-destructive mb-4">{error}</p>
             <Button onClick={() => window.location.reload()}>Try Again</Button>
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   if (!shop) {
     return (
-      <div className='min-h-screen bg-background flex items-center justify-center'>
-        <Card className='max-w-md w-full bg-card'>
-          <CardContent className='p-6 text-center'>
-            <p className='text-destructive mb-4'>Shop not found.</p>
-            <Link href='/customer/shop'><Button>Back to Shops</Button></Link>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Card className="max-w-md w-full bg-card">
+          <CardContent className="p-6 text-center">
+            <p className="text-destructive mb-4">Shop not found.</p>
+            <Link href="/customer/shop">
+              <Button>Back to Shops</Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -277,12 +316,18 @@ function BookAppointmentScreenContent() {
       <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center">
           <Link href={`/customer/shop/${shop.id}`}>
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary mr-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-primary mr-2"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Shop
             </Button>
           </Link>
-          <h1 className="text-xl font-semibold text-foreground">Book at {shop.name}</h1>
+          <h1 className="text-xl font-semibold text-foreground">
+            Book at {shop.name}
+          </h1>
         </div>
       </header>
 
@@ -296,7 +341,9 @@ function BookAppointmentScreenContent() {
               </span>
               Select Services
             </CardTitle>
-            <CardDescription>Choose one or more services for your appointment.</CardDescription>
+            <CardDescription>
+              Choose one or more services for your appointment.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {shop.services.length === 0 ? (
@@ -326,11 +373,15 @@ function BookAppointmentScreenContent() {
                       >
                         {service.name}
                       </Label>
-                      <p className="text-sm text-muted-foreground mt-1">{service.description}</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {service.description}
+                      </p>
                     </div>
                   </div>
                   <div className="text-right ml-4">
-                    <p className="font-bold text-foreground text-lg">₹{service.price.toFixed(2)}</p>
+                    <p className="font-bold text-foreground text-lg">
+                      ₹{service.price.toFixed(2)}
+                    </p>
                     <p className="text-sm text-muted-foreground flex items-center justify-end mt-1">
                       <Clock className="h-3 w-3 mr-1" />
                       {formatDuration(service.duration)}
@@ -375,11 +426,17 @@ function BookAppointmentScreenContent() {
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <h3 className="font-semibold text-foreground">{barber.name}</h3>
-                        
+                        <h3 className="font-semibold text-foreground">
+                          {barber.name}
+                        </h3>
+
                         <div className="flex flex-wrap gap-1 mt-1">
                           {barber.specialties.map((specialty, index) => (
-                            <Badge key={index} variant="secondary" className="text-xs">
+                            <Badge
+                              key={index}
+                              variant="secondary"
+                              className="text-xs"
+                            >
                               {specialty}
                             </Badge>
                           ))}
@@ -411,7 +468,8 @@ function BookAppointmentScreenContent() {
                   selected={selectedDate}
                   onSelect={setSelectedDate}
                   disabled={(date) =>
-                    date < new Date(new Date().setDate(new Date().getDate() - 1))
+                    date <
+                    new Date(new Date().setDate(new Date().getDate() - 1))
                   } // Disable past dates and Sundays
                   className="rounded-md border-border p-0"
                 />
@@ -420,7 +478,9 @@ function BookAppointmentScreenContent() {
 
             <Card className="shadow-lg bg-card" ref={timeRef}>
               <CardHeader>
-                <CardTitle className="text-xl text-foreground">Select Time</CardTitle>
+                <CardTitle className="text-xl text-foreground">
+                  Select Time
+                </CardTitle>
                 <CardDescription>
                   {selectedDate
                     ? `Available slots for ${selectedDate.toLocaleDateString()}`
@@ -429,9 +489,13 @@ function BookAppointmentScreenContent() {
               </CardHeader>
               <CardContent>
                 {isFetchingSlots ? (
-                  <div className="flex justify-center py-8"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  </div>
                 ) : availableTimeSlots.length === 0 ? (
-                  <p className="text-muted-foreground text-center py-8">No available slots for this date and staff.</p>
+                  <p className="text-muted-foreground text-center py-8">
+                    No available slots for this date and staff.
+                  </p>
                 ) : (
                   <div className="grid grid-cols-3 gap-2">
                     {availableTimeSlots.map((time) => (
@@ -457,15 +521,20 @@ function BookAppointmentScreenContent() {
         {canProceed && (
           <Card className="shadow-xl mt-8 sticky bottom-4 z-10 bg-card">
             <CardHeader>
-              <CardTitle className="text-xl text-foreground">Booking Summary</CardTitle>
+              <CardTitle className="text-xl text-foreground">
+                Booking Summary
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <h4 className="font-medium text-foreground mb-1">Selected Services:</h4>
+                <h4 className="font-medium text-foreground mb-1">
+                  Selected Services:
+                </h4>
                 <ul className="list-disc list-inside pl-1 space-y-1 text-sm text-muted-foreground">
                   {selectedServicesDetails.map((s) => (
                     <li key={s.id}>
-                      {s.name} (₹{s.price.toFixed(2)}) - {formatDuration(s.duration)}
+                      {s.name} (₹{s.price.toFixed(2)}) -{" "}
+                      {formatDuration(s.duration)}
                     </li>
                   ))}
                 </ul>
@@ -488,7 +557,9 @@ function BookAppointmentScreenContent() {
               <div className="border-t border-border pt-3 mt-3 space-y-1">
                 <p className="flex justify-between text-sm">
                   <span>Total Estimated Duration:</span>
-                  <span className="font-medium">{formatDuration(totalDuration)}</span>
+                  <span className="font-medium">
+                    {formatDuration(totalDuration)}
+                  </span>
                 </p>
                 <p className="flex justify-between text-lg font-semibold">
                   <span>Total Price:</span>
@@ -507,7 +578,7 @@ function BookAppointmentScreenContent() {
         )}
       </main>
     </div>
-  )
+  );
 }
 
 export default function BookAppointmentScreen() {
@@ -515,5 +586,5 @@ export default function BookAppointmentScreen() {
     <AuthProvider>
       <BookAppointmentScreenContent />
     </AuthProvider>
-  )
+  );
 }
