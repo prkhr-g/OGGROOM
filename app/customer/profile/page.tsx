@@ -264,16 +264,7 @@ function CustomerProfilePageContent() {
       <header className="px-4 sm:px-6 md:px-8 lg:px-12 sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/customer/home">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-primary"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
-            </Link>
+
             {user?.is_shop_owner && ( // Assuming user.is_shop_owner exists
               <Link href="/shop-owner/dashboard">
                 <Button
@@ -285,17 +276,10 @@ function CustomerProfilePageContent() {
                 </Button>
               </Link>
             )}
-            <div className="ml-2 flex items-center gap-2">
-              <Image
-                src="/logo.png"
-                alt="OGGroom Logo"
-                width={30}
-                height={30}
-              />
-              <span className="text-xl font-bold text-foreground">
-                My Profile
-              </span>
-            </div>
+          <Link href="/customer/home" className="flex items-center gap-2">
+            <Image src="/logo.png" alt="OGGroom Logo" width={40} height={40} />
+            <span className="text-2xl font-bold text-foreground">OGGroom</span>
+          </Link>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="destructive" size="sm" onClick={handleLogout}>

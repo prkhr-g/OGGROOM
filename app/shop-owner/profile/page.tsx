@@ -262,18 +262,12 @@ function ShopOwnerProfilePageContent() {
     <div className="min-h-screen bg-background">
       <header className="px-4 sm:px-6 md:px-8 lg:px-12 sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Settings className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold text-foreground">
-              {profile ? "Shop Profile" : "Create Your Shop Profile"}
-            </span>
-          </div>
+          <Link href="/shop-owner/dashboard" className="flex items-center gap-2">
+            <Image src="/logo.png" alt="OGGroom Logo" width={40} height={40} />
+            <span className="text-2xl font-bold text-foreground">OGGroom</span>
+          </Link>
           <div className="flex items-center gap-3">
-            <Link href="/shop-owner/dashboard">
-              <Button variant="outline" size="sm">
-                Dashboard
-              </Button>
-            </Link>
+
             <Button variant="destructive" size="sm" onClick={handleLogout}>
               Logout
             </Button>
