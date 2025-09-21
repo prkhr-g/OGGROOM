@@ -4,15 +4,13 @@ CREATE OR REPLACE FUNCTION public.create_shop_and_owner(
     owner_phone text,
     shop_name text,
     shop_type text,
-    shop_email text,
-    shop_phone text,
     shop_address text,
     shop_latitude double precision, -- New parameter
     shop_longitude double precision, -- New parameter
     opening_time text,
     closing_time text
 )
-RETURNS void AS $$
+RETURNS void AS $
 DECLARE
     new_shop_owner_id uuid;
 BEGIN
@@ -22,8 +20,6 @@ BEGIN
         phone_number,
         shop_name,
         shop_type,
-        shop_email,
-        shop_phone,
         shop_address,
         shop_latitude,
         shop_longitude,
@@ -36,8 +32,6 @@ BEGIN
         owner_phone,
         shop_name,
         shop_type,
-        shop_email,
-        shop_phone,
         shop_address,
         shop_latitude,
         shop_longitude,
@@ -48,4 +42,4 @@ BEGIN
     RETURNING id INTO new_shop_owner_id;
 
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$ LANGUAGE plpgsql SECURITY DEFINER;

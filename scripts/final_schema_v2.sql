@@ -14,8 +14,6 @@ CREATE TABLE IF NOT EXISTS shops (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     name VARCHAR(255) NOT NULL,
     type VARCHAR(100) NOT NULL,
-    email VARCHAR(255),
-    phone VARCHAR(20),
     address TEXT,
     is_open BOOLEAN DEFAULT true,
     opening_time TIME DEFAULT '09:00:00',
@@ -61,8 +59,6 @@ CREATE TABLE IF NOT EXISTS barbers (
     id BIGSERIAL PRIMARY KEY,
     shop_id UUID REFERENCES shops(id) ON DELETE CASCADE NOT NULL,
     name VARCHAR(255) NOT NULL,
-    email VARCHAR(255),
-    phone VARCHAR(20),
     specialties TEXT[],
     experience VARCHAR(100),
     rating DECIMAL(3,2) DEFAULT 4.5,
@@ -96,12 +92,12 @@ CREATE OR REPLACE FUNCTION create_customer_profile(
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
-AS $$
+AS $
 BEGIN
   INSERT INTO public.customers (id, name, email)
   VALUES (auth.uid(), p_name, p_email);
 END;
-$$;
+$;
 
 -- Function to create a shop and owner, and also a customer profile
 CREATE OR REPLACE FUNCTION create_shop_and_owner(
@@ -110,8 +106,6 @@ CREATE OR REPLACE FUNCTION create_shop_and_owner(
     owner_phone text,
     shop_name text,
     shop_type text,
-    shop_email text,
-    shop_phone text,
     shop_address text,
     opening_time time,
     closing_time time
@@ -132,8 +126,8 @@ BEGIN
   END IF;
 
   -- Then create the shop
-  INSERT INTO public.shops (name, type, email, phone, address, opening_time, closing_time)
-  VALUES (shop_name, shop_type, shop_email, shop_phone, shop_address, opening_time, closing_time)
+  INSERT INTO public.shops (name, type, address, opening_time, closing_time)
+  VALUES (shop_name, shop_type, shop_address, opening_time, closing_time)
   RETURNING id INTO new_shop_id;
 
   -- Finally, create the shop owner and link to the shop
@@ -152,7 +146,7 @@ ALTER TABLE barbers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bookings ENABLE ROW LEVEL SECURITY;
 
 CREATE OR REPLACE FUNCTION is_shop_owner(shop_id_to_check UUID)
-RETURNS BOOLEAN AS $$
+RETURNS BOOLEAN AS $
 BEGIN
   RETURN EXISTS (
     SELECT 1
@@ -160,7 +154,7 @@ BEGIN
     WHERE shop_owners.shop_id = shop_id_to_check AND shop_owners.id = auth.uid()
   );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$ LANGUAGE plpgsql SECURITY DEFINER;
 
 CREATE POLICY "Allow all access to own shop owner profile" ON public.shop_owners FOR ALL USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 CREATE POLICY "Allow owners to view, update, delete own shops" ON public.shops FOR ALL USING (is_shop_owner(id));

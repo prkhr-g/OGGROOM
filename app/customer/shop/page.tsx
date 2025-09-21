@@ -43,8 +43,6 @@ interface Shop {
   id: string;
   name: string;
   type: string;
-  email: string;
-  phone: string;
   address: string;
   is_open: boolean;
   opening_time: string;
@@ -280,14 +278,7 @@ export default function ShopBrowserPage() {
                       <p>{(shop.distance_meters / 1000).toFixed(1)} km</p>
                     )}
                   </div>
-                  <p className="flex items-center text-sm text-muted-foreground">
-                    <Phone className="h-4 w-4 mr-2" />
-                    {shop.phone}
-                  </p>
-                  <p className="flex items-center text-sm text-muted-foreground">
-                    <Mail className="h-4 w-4 mr-2" />
-                    {shop.email}
-                  </p>
+
                   <p className="flex items-center text-sm text-muted-foreground">
                     <Clock className="h-4 w-4 mr-2" />
                     {shop.opening_time} - {shop.closing_time}

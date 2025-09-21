@@ -56,8 +56,6 @@ interface Shop {
   id: string;
   name: string;
   type: string;
-  email: string;
-  phone: string;
   address: string;
   is_open: boolean;
   opening_time: string;

@@ -11,8 +11,6 @@ RETURNS TABLE (
     id uuid,
     name character varying,
     type character varying,
-    email character varying,
-    phone character varying,
     address text,
     is_open boolean,
     opening_time text,
@@ -23,15 +21,13 @@ RETURNS TABLE (
     average_rating NUMERIC(3, 2)
 )
 LANGUAGE plpgsql
-AS $$
+AS $
 BEGIN
     RETURN QUERY
     SELECT
         s.id,
         s.name,
         s.type,
-        s.email,
-        s.phone,
         s.address,
         s.is_open,
         s.opening_time::text,
@@ -58,8 +54,6 @@ BEGIN
         s.id,
         s.name,
         s.type,
-        s.email,
-        s.phone,
         s.address,
         s.is_open,
         s.opening_time,
@@ -69,4 +63,4 @@ BEGIN
     ORDER BY
         distance_meters;
 END;
-$$;
+$;

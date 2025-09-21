@@ -95,7 +95,7 @@ export async function getShopOwnerProfile(userId: string) {
         phone,
         created_at,
         vendor_id,
-        shop:shops(*)
+        shop:shops(id, name, type, address, is_open, opening_time, closing_time, shop_latitude, shop_longitude)
       `,
       )
       .eq("id", userId)
@@ -120,8 +120,6 @@ export async function updateShopOwnerProfile(
     ownerPhone: string;
     shopName: string;
     shopType: string;
-    shopEmail: string;
-    shopPhone: string;
     shopAddress: string;
     shopLatitude: number | null;
     shopLongitude: number | null;
@@ -146,18 +144,6 @@ export async function updateShopOwnerProfile(
     }
     if (!profileData.shopType || profileData.shopType.trim() === "") {
       return { error: "Shop type cannot be empty." };
-    }
-    if (!profileData.shopEmail || profileData.shopEmail.trim() === "") {
-      return { error: "Shop email cannot be empty." };
-    }
-    if (!/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(profileData.shopEmail)) {
-      return { error: "Invalid shop email format." };
-    }
-    if (!profileData.shopPhone || profileData.shopPhone.trim() === "") {
-      return { error: "Shop phone number cannot be empty." };
-    }
-    if (!/^[0-9]{10,15}$/.test(profileData.shopPhone)) {
-      return { error: "Invalid shop phone number format." };
     }
     if (!profileData.shopAddress || profileData.shopAddress.trim() === "") {
       return { error: "Shop address cannot be empty." };
@@ -195,8 +181,6 @@ export async function updateShopOwnerProfile(
       .update({
         name: profileData.shopName,
         type: profileData.shopType,
-        email: profileData.shopEmail,
-        phone: profileData.shopPhone,
         address: profileData.shopAddress,
         opening_time: profileData.openingTime,
         closing_time: profileData.closingTime,
@@ -254,8 +238,6 @@ export async function createShopOwnerProfile(
     ownerPhone: string;
     shopName: string;
     shopType: string;
-    shopEmail: string;
-    shopPhone: string;
     shopAddress: string;
     shopLatitude: number | null;
     shopLongitude: number | null;
@@ -287,18 +269,6 @@ export async function createShopOwnerProfile(
     if (!profileData.shopType || profileData.shopType.trim() === "") {
       return { error: "Shop type cannot be empty." };
     }
-    if (!profileData.shopEmail || profileData.shopEmail.trim() === "") {
-      return { error: "Shop email cannot be empty." };
-    }
-    if (!/^\S+@\S+\.\S+$/.test(profileData.shopEmail)) {
-      return { error: "Invalid shop email format." };
-    }
-    if (!profileData.shopPhone || profileData.shopPhone.trim() === "") {
-      return { error: "Shop phone number cannot be empty." };
-    }
-    if (!/^[0-9]{10,15}$/.test(profileData.shopPhone)) {
-      return { error: "Invalid shop phone number format." };
-    }
     if (!profileData.shopAddress || profileData.shopAddress.trim() === "") {
       return { error: "Shop address cannot be empty." };
     }
@@ -321,8 +291,6 @@ export async function createShopOwnerProfile(
       owner_phone: profileData.ownerPhone,
       shop_name: profileData.shopName,
       shop_type: profileData.shopType,
-      shop_email: profileData.shopEmail,
-      shop_phone: profileData.shopPhone,
       shop_address: profileData.shopAddress,
       shop_latitude: profileData.shopLatitude,
       shop_longitude: profileData.shopLongitude,
@@ -371,8 +339,6 @@ export async function addBarber(
   barberData: {
     name: string;
     experience: string;
-    phone: string;
-    email: string;
     specialties: string[];
   },
 ) {
@@ -460,8 +426,6 @@ export async function updateBarber(
   barberData: {
     name: string;
     experience: string;
-    phone: string;
-    email: string;
     specialties: string[];
   },
 ) {
@@ -560,9 +524,17 @@ export async function getShopDetailsForCustomer(shopId: string) {
       .from("shops")
       .select(
         `
-        *,
+        id,
+        name,
+        type,
+        address,
+        is_open,
+        opening_time,
+        closing_time,
+        shop_latitude,
+        shop_longitude,
         services(*),
-        barbers(*)
+        barbers(id, name, specialties, experience)
       `,
       )
       .eq("id", shopId)
@@ -586,9 +558,9 @@ export async function getShopOwnerDashboard(shopId: string) {
       .select(
         `
         *,
-        bookings:bookings(*, customer:customers(name, phone, email)),
+        bookings:bookings(*, customer:customers(name)),
         services:services(*),
-        barbers:barbers(*),
+        barbers(id, name, specialties, experience),
         reviews:reviews(*)
       `,
       )
@@ -613,7 +585,7 @@ export async function getShopBookings(shopId: string) {
       .select(
         `
         *,
-        customer:customers(name, phone, email),
+        customer:customers(name),
         barber:barbers(name)
       `,
       )
@@ -636,13 +608,13 @@ export async function getAllData() {
   try {
     const { data: shops, error: shopsError } = await supabase
       .from("shops")
-      .select("*");
+      .select("id, name, type, address, is_open, opening_time, closing_time, shop_latitude, shop_longitude");
     const { data: services, error: servicesError } = await supabase
       .from("services")
       .select("*");
     const { data: barbers, error: barbersError } = await supabase
       .from("barbers")
-      .select("*");
+      .select("id, name, specialties, experience");
 
     if (shopsError || servicesError || barbersError) {
       return {

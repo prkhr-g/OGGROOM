@@ -73,8 +73,6 @@ interface ShopOwnerProfile {
     id: string;
     name: string;
     type: string;
-    email: string;
-    phone: string;
     address: string;
     is_open: boolean;
     opening_time: string;
@@ -103,8 +101,6 @@ function ShopOwnerProfilePageContent() {
     ownerPhone: "",
     shopName: "",
     shopType: "barbershop",
-    shopEmail: "",
-    shopPhone: "",
     shopAddress: "",
     shopLatitude: null as number | null,
     shopLongitude: null as number | null,
@@ -134,8 +130,6 @@ function ShopOwnerProfilePageContent() {
           ownerPhone: result.profile.phone,
           shopName: result.profile.shop.name,
           shopType: result.profile.shop.type,
-          shopEmail: result.profile.shop.email,
-          shopPhone: result.profile.shop.phone,
           shopAddress: result.profile.shop.address,
           shopLatitude: result.profile.shop.shop_latitude || null,
           shopLongitude: result.profile.shop.shop_longitude || null,
@@ -229,8 +223,6 @@ function ShopOwnerProfilePageContent() {
         ownerPhone: profile.phone,
         shopName: profile.shop.name,
         shopType: profile.shop.type,
-        shopEmail: profile.shop.email,
-        shopPhone: profile.shop.phone,
         shopAddress: profile.shop.address,
         shopLatitude: profile.shop.shop_latitude || null,
         shopLongitude: profile.shop.shop_longitude || null,
@@ -454,38 +446,8 @@ function ShopOwnerProfilePageContent() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
-                      <Label htmlFor="shop-email">Shop Email</Label>
-                      <Input
-                        id="shop-email"
-                        type="email"
-                        value={editData.shopEmail}
-                        onChange={(e) =>
-                          setEditData({
-                            ...editData,
-                            shopEmail: e.target.value,
-                          })
-                        }
-                        disabled={!isEditing}
-                      />
-                    </div>
                   </div>
                   <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="shop-phone">Shop Phone</Label>
-                      <Input
-                        id="shop-phone"
-                        type="tel"
-                        value={editData.shopPhone}
-                        onChange={(e) =>
-                          setEditData({
-                            ...editData,
-                            shopPhone: e.target.value,
-                          })
-                        }
-                        disabled={!isEditing}
-                      />
-                    </div>
                     <div>
                       <GoogleMapsProvider>
                         <AddressAutocompleteInput
