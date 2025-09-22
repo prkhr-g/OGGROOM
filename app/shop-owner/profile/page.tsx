@@ -315,7 +315,7 @@ function ShopOwnerProfilePageContent() {
                   )}
                   <div>
                     <CardTitle className="text-xl text-foreground">
-                      {isEditing ? "Edit Profile Information" : profile?.name}
+                      {profile?.name}
                     </CardTitle>
                     <CardDescription className="flex items-center gap-1 mt-1 text-muted-foreground">
                       <Mail className="h-4 w-4" />
@@ -323,6 +323,15 @@ function ShopOwnerProfilePageContent() {
                     </CardDescription>
                   </div>
                 </div>
+              </div>
+            </CardHeader>
+
+            <CardContent className="space-y-6">
+              <div>
+                <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold mb-4 text-foreground">
+                  Owner Information
+                </h3>
                 {!isEditing && profile && (
                   <Button
                     className="ml-1"
@@ -333,13 +342,6 @@ function ShopOwnerProfilePageContent() {
                   </Button>
                 )}
               </div>
-            </CardHeader>
-
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold mb-4 text-foreground">
-                  Owner Information
-                </h3>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>

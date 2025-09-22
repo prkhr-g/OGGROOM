@@ -521,7 +521,7 @@ export default function LandingPage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="w-full sm:w-auto"
+                  className="w-full sm:text-grey-950"
                 >
                   Register Your Shop
                 </Button>

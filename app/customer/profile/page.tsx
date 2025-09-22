@@ -322,15 +322,6 @@ function CustomerProfilePageContent() {
                     </CardDescription>
                   </div>
                 </div>
-                {!isEditing && (
-                  <Button
-                    className="mb-6 px-3"
-                    onClick={() => setIsEditing(true)}
-                    variant="outline"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                )}
               </div>
             </CardHeader>
 
@@ -345,6 +336,18 @@ function CustomerProfilePageContent() {
                   {success}
                 </div>
               )}
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium">Customer's Information</h3>
+                {!isEditing && (
+                  <Button
+                    className="px-3"
+                    onClick={() => setIsEditing(true)}
+                    variant="outline"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
