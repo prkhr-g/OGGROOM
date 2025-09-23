@@ -27,6 +27,10 @@ DECLARE
     i INTEGER;
     j INTEGER;
 BEGIN
+    -- Check if the requested date is within the allowed time range
+    IF p_date < CURRENT_DATE OR p_date > CURRENT_DATE + INTERVAL '3 days' THEN
+        RETURN;
+    END IF;
     -- Fetch shop opening/closing times
     SELECT opening_time, closing_time
     INTO v_opening_time, v_closing_time

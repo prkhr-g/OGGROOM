@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   const supabase = createServerClient();
 
   try {
-    // 1. Verify payment status with Cashfree
+    
     const cashfreeResponse = await fetch(
       `${process.env.CASHFREE_API_URL}/pg/orders/${orderId}`,
       {
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
 
     const cashfreeData = await cashfreeResponse.json();
 
-    // 2. Check if payment is successful
+    
     if (cashfreeData.order_status !== "PAID") {
       return NextResponse.json(
         {
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Retrieve the pending booking
+    
     const { data: pendingBooking, error: fetchError } = await supabase
       .from("pending_bookings")
       .select("*")
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 5. Create the final booking
+    
     const { error: bookingError } = await supabase.from("bookings").insert([
       {
         customer_id: pendingBooking.customer_id,
@@ -85,19 +85,18 @@ export async function POST(request: Request) {
 
     if (bookingError) {
       console.error("Error creating final booking:", bookingError);
-      // Potentially update pending_booking status to FAILED here
+     
       throw new Error("Failed to create the final booking.");
     }
 
-    // 6. Update the pending booking status to COMPLETED
+    
     const { error: updateError } = await supabase
       .from("pending_bookings")
       .update({ status: "COMPLETED" })
       .eq("order_id", orderId);
 
     if (updateError) {
-      // This is not ideal, as the booking is created but the pending one is not marked.
-      // Requires monitoring or a cleanup job.
+     
       console.error(
         "CRITICAL: Failed to update pending booking status after creation:",
         updateError,

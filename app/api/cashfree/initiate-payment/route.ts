@@ -21,7 +21,7 @@ export async function POST(request: Request) {
 
     const supabase = createServerClient();
 
-    // 1. Get Vendor ID from shops table
+    
     const { data: shopData, error: shopError } = await supabase
       .from("shops")
       .select("vendor_id")
@@ -36,10 +36,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // 2. Create a unique order ID
+   
     const order_id = uuidv4();
 
-    // 3. Create a pending booking in the database
+    
     const { error: pendingBookingError } = await supabase
       .from("pending_bookings")
       .insert([
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 4. Prepare the request to Cashfree
+    
     const vendorId = shopData.vendor_id;
     const requestBody: any = {
       order_id: order_id,
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
       ];
     }
 
-    // 5. Call Cashfree API
+    
     const cashfreeResponse = await fetch(
       `${process.env.CASHFREE_API_URL}/pg/orders`,
       {

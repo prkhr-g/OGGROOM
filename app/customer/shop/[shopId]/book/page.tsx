@@ -464,9 +464,9 @@ function BookAppointmentScreenContent() {
                   selected={selectedDate}
                   onSelect={setSelectedDate}
                   disabled={(date) =>
-                    date <
-                    new Date(new Date().setDate(new Date().getDate() - 1))
-                  } // Disable past dates and Sundays
+                    date < new Date(new Date().setDate(new Date().getDate() - 1)) ||
+                    date > new Date(new Date().setDate(new Date().getDate() + 3))
+                  }
                   className="rounded-md border-border p-0"
                 />
               </CardContent>
