@@ -9,7 +9,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "OGGroom - Smart Salon & Barbershop Booking",
+  title: "OGGROOM - Smart Salon & Barbershop Booking",
   description:
     "Book your salon appointments with ease. Smart scheduling for customers and shop owners.",
   generator: "v0.dev",

@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, Clock, DollarSign, Star, Loader2 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
 import {
   getShopDetailsForCustomer,
@@ -311,19 +312,14 @@ function BookAppointmentScreenContent() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center">
-          <Link href={`/customer/shop/${shop.id}`}>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-primary mr-2"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Shop
-            </Button>
-          </Link>
-          <h1 className="text-xl font-semibold text-foreground">
-            Book at {shop.name}
-          </h1>
+          <div className="flex items-center gap-4">
+            <Link href={`/customer/shop/${shop.id}`} className="flex items-center gap-2 px-4 sm:pl-6 md:px-8 lg:px-12">
+              <Image src="/logo.png" alt="OGGROOM Logo" width={40} height={40} />
+            </Link>
+            <h1 className="text-xl font-semibold text-foreground">
+              Book at {shop.name}
+            </h1>
+          </div>
         </div>
       </header>
 
@@ -458,7 +454,10 @@ function BookAppointmentScreenContent() {
                   Select Date
                 </CardTitle>
               </CardHeader>
-              <CardContent className="flex justify-center">
+              <CardContent className="flex flex-col items-center">
+                <p className="text-sm text-muted-foreground mb-2 text-center">
+                  You can only book slots up to three days in advance.
+                </p>
                 <Calendar
                   mode="single"
                   selected={selectedDate}

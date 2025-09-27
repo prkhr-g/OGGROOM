@@ -296,8 +296,8 @@ function ShopOwnerProfilePageContent() {
       <header className="px-4 sm:px-6 md:px-8 lg:px-12 sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
           <Link href="/shop-owner/dashboard" className="flex items-center gap-2">
-            <Image src="/logo.png" alt="OGGroom Logo" width={40} height={40} />
-            <span className="text-2xl font-bold text-foreground">OGGroom</span>
+            <Image src="/logo.png" alt="OGGROOM Logo" width={40} height={40} />
+            <span className="text-2xl font-bold text-foreground">OGGROOM</span>
           </Link>
           <div className="flex items-center gap-3">
 

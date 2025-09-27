@@ -10,6 +10,6 @@ step 3: npm run build
 step 4: npm run dev //to start the server
 =======
 
-# OGGroomPG
+# OGGROOMPG
 
 with payment gateway

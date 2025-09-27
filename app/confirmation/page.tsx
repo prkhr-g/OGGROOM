@@ -248,7 +248,7 @@ function ConfirmationFlow() {
         <CardHeader>
           <CardTitle>Booking Summary</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-2 ">
           <p>
             <strong>Shop:</strong> {shop?.name}
           </p>

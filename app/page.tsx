@@ -90,7 +90,7 @@ export default function LandingPage() {
   const testimonials = [
     {
       quote:
-        "OGGroom has completely transformed how we manage appointments. No more overbookings or scheduling errors!",
+        "OGGROOM has completely transformed how we manage appointments. No more overbookings or scheduling errors!",
       name: "Michael Rodriguez",
       role: "Shop Owner, Elite Cuts",
       avatar: "/placeholder.svg?height=40&width=40",
@@ -120,15 +120,12 @@ export default function LandingPage() {
     ],
     company: [
       { label: "About Us", href: "#" },
-      { label: "Contact", href: "#" },
-      { label: "Careers", href: "#" },
-      { label: "Blog", href: "#" },
+      { label: "Contact", href: "/contact" },
     ],
     support: [
       { label: "FAQs", href: "#" },
-      { label: "Terms of Service", href: "#" },
-      { label: "Privacy Policy", href: "#" },
-      { label: "Help Center", href: "#" },
+      { label: "Terms & Conditions", href: "/terms" },
+      { label: "Privacy Policy", href: "/privacy" },
     ],
   };
 
@@ -219,8 +216,8 @@ export default function LandingPage() {
       <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 sm:px-6 md:px-8 lg:px-12 ">
         <div className="container  flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <Image src="/logo.png" alt="OGGroom Logo" width={40} height={40} />
-            <span className="text-2xl font-bold text-foreground">OGGroom</span>
+            <Image src="/logo.png" alt="OGGROOM Logo" width={40} height={40} />
+            <span className="text-2xl font-bold text-foreground">OGGROOM</span>
           </Link>
           <nav className="hidden md:flex gap-6 items-center">
             {navLinks.map((link) => (
@@ -249,11 +246,11 @@ export default function LandingPage() {
                   <Link href="/" className="flex items-center gap-2 mb-4">
                     <Image
                       src="/logo.png"
-                      alt="OGGroom Logo"
+alt="OGGROOM Logo"
                       width={40}
                       height={40}
                     />
-                    <span className="text-xl font-bold">OGGroom</span>
+                    <span className="text-xl font-bold">OGGROOM</span>
                   </Link>
                   {navLinks.map((link) => (
                     <Link
@@ -348,7 +345,7 @@ export default function LandingPage() {
                 Smarter Booking. Better Experience.
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                OGGroom utilizes advanced scheduling algorithms to provide the
+                OGGROOM utilizes advanced scheduling algorithms to provide the
                 most efficient booking experience for both customers and shop
                 owners.
               </p>
@@ -383,7 +380,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* How OGGroom Works Section */}
+        {/* How OGGROOM Works Section */}
         <section
           id="how-it-works"
           className="py-16 md:py-24 bg-background px-4 sm:px-6 md:px-8 lg:px-12"
@@ -391,7 +388,7 @@ export default function LandingPage() {
           <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                How OGGroom Works
+                How OGGROOM Works
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                 Our intelligent booking platform makes scheduling your
@@ -505,7 +502,7 @@ export default function LandingPage() {
             </h2>
             <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
               Join thousands of customers and shop owners who are saving time
-              with OGGroom's intelligent booking platform.
+              with OGGROOM's intelligent booking platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/auth?type=customer">
@@ -545,12 +542,12 @@ export default function LandingPage() {
               <Link href="/" className="flex items-center gap-2 mb-4">
                 <Image
                   src="/logo.png"
-                  alt="OGGroom Logo"
+                  alt="OGGROOM Logo"
                   width={40}
                   height={40}
                 />
                 <span className="text-2xl font-bold text-foreground">
-                  OGGroom
+                  OGGROOM
                 </span>
               </Link>
               <p className="text-sm text-muted-foreground">
@@ -612,7 +609,7 @@ export default function LandingPage() {
           </div>
           <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
             <p>
-              &copy; {new Date().getFullYear()} OGGroom. All rights reserved.
+              &copy; {new Date().getFullYear()} OGGROOM. All rights reserved.
             </p>
           </div>
         </div>

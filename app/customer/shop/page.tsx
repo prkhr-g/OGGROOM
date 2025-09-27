@@ -22,6 +22,7 @@ import {
   Filter,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   getAvailableShops,
   getCustomerProfile,
@@ -186,10 +187,7 @@ export default function ShopBrowserPage() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/customer/home" passHref>
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back
-              </Button>
+              <Image src="/logo.png" alt="OGGROOM Logo" width={40} height={40} />
             </Link>
             <h1 className="text-xl font-semibold text-foreground">
               Browse Shops

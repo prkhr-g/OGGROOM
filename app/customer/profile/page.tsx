@@ -311,8 +311,8 @@ function CustomerProfilePageContent() {
               </Link>
             )}
           <Link href="/customer/home" className="flex items-center gap-2">
-            <Image src="/logo.png" alt="OGGroom Logo" width={40} height={40} />
-            <span className="text-2xl font-bold text-foreground">OGGroom</span>
+            <Image src="/logo.png" alt="OGGROOM Logo" width={40} height={40} />
+            <span className="text-2xl font-bold text-foreground">OGGROOM</span>
           </Link>
           </div>
           <div className="flex items-center gap-2">

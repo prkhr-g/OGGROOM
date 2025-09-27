@@ -384,7 +384,7 @@ function ShopOwnerDashboardContent() {
       <header className="bg-card shadow-sm border-b border-border">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Image src="/logo.png" alt="OGGroom Logo" width={30} height={30} />
+            <Image src="/logo.png" alt="OGGROOM Logo" width={30} height={30} />
             <div>
               <h1 className="text-xl font-semibold text-foreground">
                 {profile?.shop?.name || "Shop Dashboard"}
