@@ -56,6 +56,16 @@ const AddressAutocompleteInput = dynamic(
 );
 
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface CustomerProfile {
   id: string;
@@ -80,6 +90,8 @@ function CustomerProfilePageContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [editData, setEditData] = useState({
     name: "",
@@ -169,6 +181,28 @@ function CustomerProfilePageContent() {
     setIsEditing(false);
     setError("");
   };
+
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      setError("");
+      const response = await fetch("/api/user/delete", {
+        method: "POST",
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete account");
+      }
+      await supabase.auth.signOut();
+      router.push("/");
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
+  };
+
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -534,10 +568,44 @@ function CustomerProfilePageContent() {
                 </p>
                 <p className="mt-1">Account ID: {profile.id}</p>
               </div>
+              <Button
+                variant="destructive"
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className="mt-4"
+              >
+                Delete Account
+              </Button>
             </CardContent>
           </Card>
         </div>
       </main>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              account and remove your data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

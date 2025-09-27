@@ -50,6 +50,16 @@ import {
   createShopOwnerProfile,
 } from "@/lib/profile-actions";
 import { VendorIdForm } from "@/components/ui/vendor-id-form";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const AddressAutocompleteInput = dynamic(
   () =>
@@ -94,6 +104,8 @@ function ShopOwnerProfilePageContent() {
   const [isVendorModalOpen, setIsVendorModalOpen] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const [editData, setEditData] = useState({
     ownerName: "",
@@ -240,6 +252,27 @@ function ShopOwnerProfilePageContent() {
   const handleVendorIdSuccess = (vendorId: string) => {
     setSuccess(`Vendor ID ${vendorId} generated successfully!`);
     loadProfile();
+  };
+
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      setError("");
+      const response = await fetch("/api/user/delete", {
+        method: "POST",
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete account");
+      }
+      await supabase.auth.signOut();
+      router.push("/");
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setIsDeleting(false);
+      setIsDeleteDialogOpen(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -554,6 +587,23 @@ function ShopOwnerProfilePageContent() {
               </CardContent>
             </Card>
           )}
+          <Card className="bg-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                Account Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Button
+                variant="destructive"
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className="mt-4"
+              >
+                Delete Account
+              </Button>
+            </CardContent>
+          </Card>
         </div>
         {profile && (
           <VendorIdForm
@@ -565,6 +615,33 @@ function ShopOwnerProfilePageContent() {
           />
         )}
       </main>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              account and remove your data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
