@@ -18,10 +18,7 @@ import { ArrowLeft, Clock, DollarSign, Star, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams, useRouter, useParams } from "next/navigation";
-import {
-  getShopDetailsForCustomer,
-  getAvailableTimeSlots,
-} from "@/lib/profile-actions";
+import { getShopDetailsForCustomer, getAllTimeSlots } from "@/lib/profile-actions";
 import { AuthProvider, useAuth } from "@/components/auth-provider";
 import { v4 as uuidv4 } from "uuid";
 
@@ -52,6 +49,11 @@ interface Barber {
   experience: string;
 }
 
+interface TimeSlot {
+  time_slot: string;
+  status: "available" | "booked";
+}
+
 function BookAppointmentScreenContent() {
   const params = useParams();
   const shopId = params.shopId as string;
@@ -70,10 +72,7 @@ function BookAppointmentScreenContent() {
     new Date(),
   );
   const [selectedTime, setSelectedTime] = useState<string>("");
-  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
-  const [bookedSlots, setBookedSlots] = useState<
-    { start: string; end: string }[]
-  >([]);
+  const [allTimeSlots, setAllTimeSlots] = useState<TimeSlot[]>([]);
   const [isFetchingSlots, setIsFetchingSlots] = useState(false);
 
   const barberRef = useRef<HTMLDivElement>(null);
@@ -91,7 +90,6 @@ function BookAppointmentScreenContent() {
         }
         setShop(result.shop);
 
-        // Initialize selected services from URL query params
         const serviceIdsFromQuery = searchParams.get("services");
         if (serviceIdsFromQuery) {
           setSelectedServiceIds(serviceIdsFromQuery.split(",").map(Number));
@@ -135,33 +133,53 @@ function BookAppointmentScreenContent() {
 
   useEffect(() => {
     const fetchTimeSlots = async () => {
-      if (selectedBarberId && selectedDate && shopId && totalDuration > 0) {
+      if (selectedBarberId && selectedDate && shopId) {
         setIsFetchingSlots(true);
         setError(null);
         try {
           const formattedDate = selectedDate.toISOString().split("T")[0];
-          const result = await getAvailableTimeSlots(
+          const result = await getAllTimeSlots(
             shopId,
             selectedBarberId,
             formattedDate,
-            totalDuration,
           );
           if (result.error) {
             throw new Error(result.error);
           }
-          setAvailableTimeSlots(result.timeSlots || []);
-          setBookedSlots(result.bookedSlots || []);
+          setAllTimeSlots(result.slots || []);
         } catch (err: any) {
           setError(err.message);
         } finally {
           setIsFetchingSlots(false);
         }
       } else {
-        setAvailableTimeSlots([]);
+        setAllTimeSlots([]);
       }
     };
     fetchTimeSlots();
-  }, [selectedBarberId, selectedDate, shopId, totalDuration]);
+  }, [selectedBarberId, selectedDate, shopId]);
+
+  const canSlotAccommodate = (startTime: string): boolean => {
+    if (totalDuration === 0) return false;
+
+    const startIndex = allTimeSlots.findIndex(
+      (slot) => slot.time_slot === startTime,
+    );
+    if (startIndex === -1) return false;
+
+    const requiredSlots = Math.ceil(totalDuration / 15);
+
+    for (let i = 0; i < requiredSlots; i++) {
+      const slotIndex = startIndex + i;
+      if (
+        slotIndex >= allTimeSlots.length ||
+        allTimeSlots[slotIndex].status === "booked"
+      ) {
+        return false;
+      }
+    }
+    return true;
+  };
 
   useEffect(() => {
     if (selectedServiceIds.length > 0 && barberRef.current) {
@@ -188,31 +206,6 @@ function BookAppointmentScreenContent() {
     return `${h}h${m > 0 ? ` ${m}min` : ""}`;
   };
 
-  const isSlotBooked = (time: string) => {
-    const [slotHour, slotMinute] = time.split(":").map(Number);
-    const slotStart = new Date();
-    slotStart.setHours(slotHour, slotMinute, 0, 0);
-
-    for (const booked of bookedSlots) {
-      const [bookedStartHour, bookedStartMinute] = booked.start
-        .split(":")
-        .map(Number);
-      const [bookedEndHour, bookedEndMinute] = booked.end
-        .split(":")
-        .map(Number);
-
-      const bookedStartTime = new Date();
-      bookedStartTime.setHours(bookedStartHour, bookedStartMinute, 0, 0);
-      const bookedEndTime = new Date();
-      bookedEndTime.setHours(bookedEndHour, bookedEndMinute, 0, 0);
-
-      if (slotStart >= bookedStartTime && slotStart < bookedEndTime) {
-        return true;
-      }
-    }
-    return false;
-  };
-
   const handlePayment = async () => {
     if (!user || !shop) {
       setError("You must be logged in to make a payment.");
@@ -229,7 +222,7 @@ function BookAppointmentScreenContent() {
         customerDetails: {
           customer_id: user.id,
           customer_email: user.email,
-          customer_phone: user.phone || "9999999999", // Fallback phone
+          customer_phone: user.phone || "9999999999",
         },
         shopId: shop.id,
       };
@@ -245,7 +238,6 @@ function BookAppointmentScreenContent() {
       const data = await response.json();
 
       if (data.success && data.payment_session_id) {
-        // Redirect to Cashfree
         const cashfreeSDK = new (window as any).Cashfree(
           data.payment_session_id,
         );
@@ -324,7 +316,6 @@ function BookAppointmentScreenContent() {
       </header>
 
       <main className="container mx-auto px-4 py-6 space-y-6 max-w-4xl">
-        {/* Step 1: Select Services */}
         <Card className="shadow-lg bg-card">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl text-foreground">
@@ -385,7 +376,6 @@ function BookAppointmentScreenContent() {
           </CardContent>
         </Card>
 
-        {/* Step 2: Select Barber (Enabled if services are selected) */}
         {selectedServiceIds.length > 0 && (
           <Card className="shadow-lg bg-card" ref={barberRef}>
             <CardHeader>
@@ -404,7 +394,11 @@ function BookAppointmentScreenContent() {
                   <Card
                     key={barber.id}
                     className={`cursor-pointer transition-all p-4 rounded-lg border
-                                    ${selectedBarberId === barber.id ? "bg-primary/10 border-primary ring-2 ring-primary" : "bg-background hover:bg-muted/50 border-border"}`}
+                                    ${
+                                      selectedBarberId === barber.id
+                                        ? "bg-primary/10 border-primary ring-2 ring-primary"
+                                        : "bg-background hover:bg-muted/50 border-border"
+                                    }`}
                     onClick={() => setSelectedBarberId(barber.id)}
                   >
                     <div className="flex items-center gap-3">
@@ -442,7 +436,6 @@ function BookAppointmentScreenContent() {
           </Card>
         )}
 
-        {/* Step 3: Select Date & Time (Enabled if barber is selected) */}
         {selectedBarberId && (
           <div className="grid md:grid-cols-2 gap-6" ref={calendarRef}>
             <Card className="shadow-lg bg-card">
@@ -478,7 +471,7 @@ function BookAppointmentScreenContent() {
                 </CardTitle>
                 <CardDescription>
                   {selectedDate
-                    ? `Available slots for ${selectedDate.toLocaleDateString()}`
+                    ? `Showing all slots for ${selectedDate.toLocaleDateString()}`
                     : "Please select a date first"}
                 </CardDescription>
               </CardHeader>
@@ -487,24 +480,34 @@ function BookAppointmentScreenContent() {
                   <div className="flex justify-center py-8">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                   </div>
-                ) : availableTimeSlots.length === 0 ? (
+                ) : allTimeSlots.length === 0 ? (
                   <p className="text-muted-foreground text-center py-8">
-                    No available slots for this date and staff.
+                    No slots available for this date. The shop might be closed.
                   </p>
                 ) : (
                   <div className="grid grid-cols-3 gap-2">
-                    {availableTimeSlots.map((time) => (
-                      <Button
-                        key={time}
-                        variant={selectedTime === time ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setSelectedTime(time)}
-                        disabled={isSlotBooked(time)}
-                        className="text-xs"
-                      >
-                        {time.substring(0, 5)} {/* Display HH:MM */}
-                      </Button>
-                    ))}
+                    {allTimeSlots.map((slot) => {
+                      const isAvailable = slot.status === "available";
+                      const canFit = isAvailable && canSlotAccommodate(slot.time_slot);
+                      const isSelected = selectedTime === slot.time_slot;
+
+                      return (
+                        <Button
+                          key={slot.time_slot}
+                          variant={isSelected ? "default" : isAvailable ? "outline" : "destructive"}
+                          size="sm"
+                          onClick={() => setSelectedTime(slot.time_slot)}
+                          disabled={!canFit}
+                          className={`text-xs ${
+                            !isAvailable ? "bg-red-500/20 text-red-500 cursor-not-allowed" : ""
+                          } ${
+                            !canFit && isAvailable ? "opacity-50 cursor-not-allowed" : ""
+                          }`}
+                        >
+                          {slot.time_slot.substring(0, 5)}
+                        </Button>
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -512,7 +515,6 @@ function BookAppointmentScreenContent() {
           </div>
         )}
 
-        {/* Booking Summary & Confirm Button */}
         {canProceed && (
           <Card className="shadow-xl mt-8 sticky bottom-4 z-10 bg-card">
             <CardHeader>

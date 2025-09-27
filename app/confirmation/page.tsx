@@ -213,7 +213,7 @@ function ConfirmationFlow() {
           status: "confirmed", // Or 'pending_payment_at_shop'
         });
         if (result.error) throw new Error(result.error);
-        router.push("/confirmation?order_id=local_booking"); // Redirect to a generic success page for non-payment bookings
+        router.push("/customer/home"); // Redirect to bookings page on success
       }
     } catch (err: any) {
       setError(err.message);

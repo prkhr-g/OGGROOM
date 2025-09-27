@@ -456,6 +456,7 @@ export async function createBooking(bookingData: {
   total_price: number;
   total_duration: number;
   customer_notes?: string;
+  status?: string;
 }) {
   const supabase = createServerClient();
   try {
@@ -497,6 +498,29 @@ export async function getAvailableTimeSlots(
     return { timeSlots: timeSlots, bookedSlots: [] };
   } catch (error: any) {
     return { error: "Failed to get available time slots: " + error.message };
+  }
+}
+
+export async function getAllTimeSlots(
+  shopId: string,
+  barberId: number,
+  date: string,
+) {
+  const supabase = createServerClient();
+  try {
+    const { data, error } = await supabase.rpc("get_all_time_slots", {
+      p_shop_id: shopId,
+      p_barber_id: barberId,
+      p_date: date,
+    });
+
+    if (error) {
+      return { error: "Failed to get all time slots: " + error.message };
+    }
+
+    return { slots: data };
+  } catch (error: any) {
+    return { error: "Failed to get all time slots: " + error.message };
   }
 }
 
