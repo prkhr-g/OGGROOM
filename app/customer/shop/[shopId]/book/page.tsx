@@ -487,6 +487,17 @@ function BookAppointmentScreenContent() {
                 ) : (
                   <div className="grid grid-cols-3 gap-2">
                     {allTimeSlots.map((slot) => {
+                      const isPastSlot =
+                        selectedDate &&
+                        selectedDate.toDateString() === new Date().toDateString() &&
+                        new Date(
+                          selectedDate.getFullYear(),
+                          selectedDate.getMonth(),
+                          selectedDate.getDate(),
+                          parseInt(slot.time_slot.split(":")[0]),
+                          parseInt(slot.time_slot.split(":")[1]),
+                        ) < new Date();
+
                       const isAvailable = slot.status === "available";
                       const canFit = isAvailable && canSlotAccommodate(slot.time_slot);
                       const isSelected = selectedTime === slot.time_slot;
@@ -497,11 +508,10 @@ function BookAppointmentScreenContent() {
                           variant={isSelected ? "default" : isAvailable ? "outline" : "destructive"}
                           size="sm"
                           onClick={() => setSelectedTime(slot.time_slot)}
-                          disabled={!canFit}
+                          disabled={!canFit || slot.status === "booked" || isPastSlot}
                           className={`text-xs ${
-                            !isAvailable ? "bg-red-500/20 text-red-500 cursor-not-allowed" : ""
-                          } ${
-                            !canFit && isAvailable ? "opacity-50 cursor-not-allowed" : ""
+                            (!canFit || slot.status === "booked" || isPastSlot)
+                              ? "bg-red-500/20 text-red-500 cursor-not-allowed" : ""
                           }`}
                         >
                           {slot.time_slot.substring(0, 5)}
