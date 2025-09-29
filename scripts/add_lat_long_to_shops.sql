@@ -1,3 +1,0 @@
-ALTER TABLE public.shops
-ADD COLUMN shop_latitude DOUBLE PRECISION,
-ADD COLUMN shop_longitude DOUBLE PRECISION;

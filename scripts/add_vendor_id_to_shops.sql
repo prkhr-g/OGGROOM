@@ -1,1 +1,0 @@
-ALTER TABLE shops ADD COLUMN vendor_id TEXT;

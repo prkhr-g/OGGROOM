@@ -1,3 +1,0 @@
-ALTER TABLE public.customers
-ADD COLUMN latitude DOUBLE PRECISION,
-ADD COLUMN longitude DOUBLE PRECISION;
