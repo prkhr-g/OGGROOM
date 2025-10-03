@@ -39,7 +39,11 @@ export async function POST(request: Request) {
    
     const order_id = uuidv4();
 
-    
+    const PG_EFFECTIVE_RATE = 0.0236;
+    const finalAmount = parseFloat(
+      (total_price / (1 - PG_EFFECTIVE_RATE)).toFixed(2),
+    );
+
     const { error: pendingBookingError } = await supabase
       .from("pending_bookings")
       .insert([
@@ -66,11 +70,10 @@ export async function POST(request: Request) {
       );
     }
 
-    
     const vendorId = shopData.vendor_id;
     const requestBody: any = {
       order_id: order_id,
-      order_amount: total_price,
+      order_amount: finalAmount,
       order_currency: "INR",
       customer_details: {
         customer_id: customer_id,

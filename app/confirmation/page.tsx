@@ -242,28 +242,48 @@ function ConfirmationFlow() {
     0,
   );
 
+  const PG_EFFECTIVE_RATE = 0.0236;
+  const finalAmount = parseFloat(
+    (totalPrice / (1 - PG_EFFECTIVE_RATE)).toFixed(2),
+  );
+  const platformFee = parseFloat((finalAmount - totalPrice).toFixed(2));
+
   return (
     <div>
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Booking Summary</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 ">
-          <p>
-            <strong>Shop:</strong> {shop?.name}
-          </p>
-          <p>
-            <strong>Staff:</strong> {selectedBarber?.name}
-          </p>
-          <p>
-            <strong>Date:</strong> {new Date(date!).toLocaleDateString()}
-          </p>
-          <p>
-            <strong>Time:</strong> {time}
-          </p>
-          <p className="font-bold text-lg">
-            Total Price: ₹{totalPrice.toFixed(2)}
-          </p>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <p>
+              <strong>Shop:</strong> {shop?.name}
+            </p>
+            <p>
+              <strong>Staff:</strong> {selectedBarber?.name}
+            </p>
+            <p>
+              <strong>Date:</strong> {new Date(date!).toLocaleDateString()}
+            </p>
+            <p>
+              <strong>Time:</strong> {time}
+            </p>
+          </div>
+          <div className="border-t pt-4 space-y-2">
+            <div className="flex justify-between">
+              <span>Service Total</span>
+              <span>₹{totalPrice.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>Platform Fee</span>
+              <span>₹{platformFee.toFixed(2)}</span>
+            </div>
+            <div className="border-t my-2"></div>
+            <div className="flex justify-between font-bold text-lg">
+              <span>Total to Pay</span>
+              <span>₹{finalAmount.toFixed(2)}</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
