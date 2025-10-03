@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { AuthProvider } from "@/components/auth-provider";
 
 interface Review {
@@ -90,20 +91,19 @@ function AnalyticsPageContent() {
     bookings.length > 0 ? (totalRevenue / bookings.length).toFixed(2) : "N/A";
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background">
       <header className="bg-card shadow-sm border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
+        <div className="px-4 py-4 flex items-center gap-4">
+          <Link href="/shop-owner/dashboard">
+            <Image src="/logo.png" alt="OGGROOM Logo" width={30} height={30} />
+          </Link>
           <h1 className="text-2xl font-bold text-foreground">
             Analytics Dashboard
           </h1>
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="max-w-6xl mx-auto mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-4 px-4 sm:px-6 md:px-8 lg:px-12">
         <Card>
           <CardHeader>
             <CardTitle>Total Revenue</CardTitle>
@@ -140,7 +140,7 @@ function AnalyticsPageContent() {
         </Card>
       </div>
 
-      <div className="max-w-6xl mx-auto mt-6">
+      <div className="max-w-6xl mx-auto mt-6 px-4 sm:px-6 md:px-8 lg:px-12">
         <h2 className="text-2xl font-bold mb-4">Customer Reviews</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {reviews.map((review) => (

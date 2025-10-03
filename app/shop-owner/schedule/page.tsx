@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -19,7 +21,6 @@ import {
   Phone,
   Mail,
   Info,
-  ArrowLeft,
 } from "lucide-react";
 import { AuthProvider, useAuth } from "@/components/auth-provider";
 import {
@@ -135,17 +136,16 @@ function ShopSchedulePageContent() {
     );
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background">
       <header className="bg-card shadow-sm border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
+        <div className="px-4 py-4 flex items-center gap-4">
+          <Link href="/shop-owner/dashboard">
+            <Image src="/logo.png" alt="OGGROOM Logo" width={30} height={30} />
+          </Link>
           <h1 className="text-2xl font-bold text-foreground">Shop Schedule</h1>
         </div>
       </header>
-      <Card className="max-w-4xl mx-auto mt-6 bg-card">
+      <Card className="max-w-4xl mt-6 bg-card mx-4 sm:mx-6 md:mx-8 lg:mx-12">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">
             Upcoming Shop Schedule

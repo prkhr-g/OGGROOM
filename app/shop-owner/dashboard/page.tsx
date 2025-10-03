@@ -389,18 +389,9 @@ function ShopOwnerDashboardContent() {
               <h1 className="text-xl font-semibold text-foreground">
                 {profile?.shop?.name || "Shop Dashboard"}
               </h1>
-              <p className="text-sm text-muted-foreground">
-                Welcome back, {profile?.name}!
-              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/shop-owner/profile">
-              <Button variant="outline" size="sm">
-                <Settings className="h-4 w-4 mr-2" />
-                Profile & Settings
-              </Button>
-            </Link>
             <Link href="/shop-owner/profile">
               <Avatar className="cursor-pointer">
                 <AvatarImage src="/placeholder.svg?height=36&width=36" />
@@ -457,11 +448,12 @@ function ShopOwnerDashboardContent() {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Button
+                variant="outline"
                 className="h-20 flex-col gap-2"
                 onClick={handleShowServicesManagement}
               >
                 <Plus className="h-6 w-6" />
-                Service's Management
+                Service Management
               </Button>
               <Button
                 variant="outline"
