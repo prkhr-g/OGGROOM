@@ -1,6 +1,0 @@
-Error creating pending booking: {
-  code: 'PGRST204',
-  details: null,
-  hint: null,
-  message: "Could not find the 'platform_fee' column of 'pending_bookings' in the schema cache"    
-}
