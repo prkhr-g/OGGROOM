@@ -75,6 +75,13 @@ function BookAppointmentScreenContent() {
   const [allTimeSlots, setAllTimeSlots] = useState<TimeSlot[]>([]);
   const [isFetchingSlots, setIsFetchingSlots] = useState(false);
 
+  const formatDateToYYYYMMDD = (date: Date) => {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const barberRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
   const timeRef = useRef<HTMLDivElement>(null);
@@ -137,7 +144,7 @@ function BookAppointmentScreenContent() {
         setIsFetchingSlots(true);
         setError(null);
         try {
-          const formattedDate = selectedDate.toISOString().split("T")[0];
+          const formattedDate = formatDateToYYYYMMDD(selectedDate);
           const result = await getAllTimeSlots(
             shopId,
             selectedBarberId,
@@ -574,7 +581,7 @@ function BookAppointmentScreenContent() {
                 </p>
               </div>
               <Link
-                href={`/confirmation?shop=${shop.id}&services=${selectedServiceIds.join(",")}&barber=${selectedBarberId}&date=${selectedDate?.toISOString()}&time=${selectedTime}`}
+                href={`/confirmation?shop=${shop.id}&services=${selectedServiceIds.join(",")}&barber=${selectedBarberId}&date=${selectedDate ? formatDateToYYYYMMDD(selectedDate) : ""}&time=${selectedTime}`}
               >
                 <Button className="w-full text-lg py-3 mt-2">
                   Continue to Confirmation
