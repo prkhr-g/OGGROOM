@@ -577,6 +577,7 @@ export async function getShopDetailsForCustomer(shopId: string) {
 export async function getShopOwnerDashboard(shopId: string) {
   const supabase = createServerClient();
   try {
+    const today = new Date().toISOString().split('T')[0];
     const { data, error } = await supabase
       .from("shops")
       .select(
@@ -624,6 +625,34 @@ export async function getShopBookings(shopId: string) {
     return { bookings: data };
   } catch (error: any) {
     return { error: "Failed to fetch shop bookings: " + error.message };
+  }
+}
+
+export async function getShopUpcomingBookings(shopId: string) {
+  const supabase = createServerClient();
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(
+        `
+        *,
+        customer:customers(name),
+        barber:barbers(name)
+      `,
+      )
+      .eq("shop_id", shopId)
+      .gte("booking_date", today)
+      .order("booking_date", { ascending: true })
+      .order("booking_time", { ascending: true });
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    return { bookings: data };
+  } catch (error: any) {
+    return { error: "Failed to fetch shop upcoming bookings: " + error.message };
   }
 }
 

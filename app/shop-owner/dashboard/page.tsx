@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -53,6 +53,7 @@ import {
   deleteBarber as deleteBarberAction,
   updateService as updateServiceAction,
   updateBarber as updateBarberAction,
+  getShopUpcomingBookings,
 } from "@/lib/profile-actions";
 import { updateBookingStatusInDb } from "@/lib/booking-actions";
 
@@ -62,6 +63,7 @@ interface Booking {
   customer: { name: string; phone: string; email: string };
   service_name: string;
   barber_name: string;
+  booking_date: string;
   booking_time: string;
   status: string;
   total_price: number;
@@ -131,6 +133,8 @@ function ShopOwnerDashboardContent() {
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
   const [isViewBookingDialogOpen, setIsViewBookingDialogOpen] = useState(false);
+  const [allUpcomingBookings, setAllUpcomingBookings] = useState<Booking[]>([]);
+  const [isViewAllBookingsDialogOpen, setIsViewAllBookingsDialogOpen] = useState(false);
 
   // Data states
   const [todayBookings, setTodayBookings] = useState<Booking[]>([]);
@@ -163,67 +167,79 @@ function ShopOwnerDashboardContent() {
     }
   }, [showTeamManagement]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!user) return;
-      try {
-        setIsLoading(true);
-        const profileResult = await getShopOwnerProfile(user.id);
-        if (profileResult.error) throw new Error(profileResult.error);
-        if (!profileResult.profile) {
-          router.push("/shop-owner/profile");
-          return;
-        }
-        setProfile(profileResult.profile);
-
-        const dashboardResult = await getShopOwnerDashboard(
-          profileResult.profile.shop.id,
-        );
-        if (dashboardResult.error || !dashboardResult.data)
-          throw new Error(
-            dashboardResult.error || "Failed to fetch dashboard data",
-          );
-
-        const mappedBookings = (dashboardResult.data.bookings || []).map(
-          (booking: any) => {
-            const serviceNames = (booking.service_ids || [])
-              .map((serviceId: number) => {
-                const service = (dashboardResult.data.services || []).find(
-                  (s: Service) => s.id === serviceId,
-                );
-                return service ? service.name : "Unknown Service";
-              })
-              .join(", ");
-
-            const barber = (dashboardResult.data.barbers || []).find(
-              (b: Barber) => b.id === booking.barber_id,
-            );
-            const barberName = barber ? barber.name : "Unknown Barber";
-
-            return {
-              ...booking,
-              service_name: serviceNames,
-              barber_name: barberName,
-            };
-          },
-        );
-        setTodayBookings(mappedBookings);
-        setServices(dashboardResult.data.services || []);
-        setBarbers(dashboardResult.data.barbers || []);
-
-        const reviewsResponse = await fetch("/api/shop-owner/analytics");
-        if (reviewsResponse.ok) {
-          const reviewsData = await reviewsResponse.json();
-          setReviews(reviewsData);
-        }
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
+  const fetchData = useCallback(async () => {
+    if (!user) return;
+    try {
+      setIsLoading(true);
+      const profileResult = await getShopOwnerProfile(user.id);
+      if (profileResult.error) throw new Error(profileResult.error);
+      if (!profileResult.profile) {
+        router.push("/shop-owner/profile");
+        return;
       }
-    };
+      setProfile(profileResult.profile);
+
+      const dashboardResult = await getShopOwnerDashboard(
+        profileResult.profile.shop.id,
+      );
+      if (dashboardResult.error || !dashboardResult.data)
+        throw new Error(
+          dashboardResult.error || "Failed to fetch dashboard data",
+        );
+
+      const upcomingBookingsResult = await getShopUpcomingBookings(
+        profileResult.profile.shop.id,
+      );
+      if (upcomingBookingsResult.error)
+        throw new Error(upcomingBookingsResult.error);
+              setAllUpcomingBookings(upcomingBookingsResult.bookings || []);
+      
+              const today = new Date().toISOString().split('T')[0];
+              const todayFilteredBookings = (dashboardResult.data.bookings || []).filter(
+                (booking: any) => booking.booking_date === today
+              );
+      
+              const mappedBookings = (todayFilteredBookings || []).map(
+                (booking: any) => {
+                  const serviceNames = (booking.service_ids || [])
+                    .map((serviceId: number) => {
+                      const service = (dashboardResult.data.services || []).find(
+                        (s: Service) => s.id === serviceId,
+                      );
+                      return service ? service.name : "Unknown Service";
+                    })
+                    .join(", ");
+      
+                  const barber = (dashboardResult.data.barbers || []).find(
+                    (b: Barber) => b.id === booking.barber_id,
+                  );
+                  const barberName = barber ? barber.name : "Unknown Barber";
+      
+                  return {
+                    ...booking,
+                    service_name: serviceNames,
+                    barber_name: barberName,
+                  };
+                },
+              );
+              setTodayBookings(mappedBookings);      setServices(dashboardResult.data.services || []);
+      setBarbers(dashboardResult.data.barbers || []);
+
+      const reviewsResponse = await fetch("/api/shop-owner/analytics");
+      if (reviewsResponse.ok) {
+        const reviewsData = await reviewsResponse.json();
+        setReviews(reviewsData);
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, router, getShopOwnerProfile, getShopOwnerDashboard, getShopUpcomingBookings]);
+
+  useEffect(() => {
     fetchData();
-  }, [user, router]);
+  }, [fetchData]);
 
   const averageRating =
     reviews.length > 0
@@ -503,7 +519,7 @@ function ShopOwnerDashboardContent() {
                 onClick={handleShowServicesManagement}
               >
                 <Plus className="h-6 w-6" />
-                Service Management
+                Service<br></br>Management
               </Button>
               <Button
                 variant="outline"
@@ -548,7 +564,7 @@ function ShopOwnerDashboardContent() {
                       Manage your daily bookings
                     </CardDescription>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => setIsViewAllBookingsDialogOpen(true)}>
                     View All
                   </Button>
                 </div>
@@ -569,6 +585,10 @@ function ShopOwnerDashboardContent() {
                           </h3>
                           <div className="text-sm text-muted-foreground">
                             {booking.service_name} with {booking.barber_name}
+                          </div>
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(booking.booking_date).toLocaleDateString()}
                           </div>
                           <div className="text-sm text-muted-foreground flex items-center gap-1">
                             <Clock className="h-3 w-3" />
@@ -1206,6 +1226,7 @@ function ShopOwnerDashboardContent() {
                 <h4 className="font-semibold">Service Details</h4>
                 <div>Service: {selectedBooking.service_name}</div>
                 <div>Barber: {selectedBooking.barber_name}</div>
+                <div>Date: {new Date(selectedBooking.booking_date).toLocaleDateString()}</div>
                 <div>Time: {selectedBooking.booking_time}</div>
                 <div>Price: ₹{selectedBooking.total_price}</div>
                 <div>
@@ -1265,6 +1286,73 @@ function ShopOwnerDashboardContent() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* View All Bookings Dialog */}
+      <Dialog
+        open={isViewAllBookingsDialogOpen}
+        onOpenChange={() => setIsViewAllBookingsDialogOpen(false)}
+      >
+        <DialogContent className="bg-card max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>All Upcoming Appointments</DialogTitle>
+            <DialogDescription>
+              A list of all upcoming bookings for your shop.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto">
+            {allUpcomingBookings.length === 0 ? (
+              <p>No upcoming appointments.</p>
+            ) : (
+              allUpcomingBookings.map((booking) => (
+                <div
+                  key={booking.id}
+                  className="flex items-center justify-between p-4 bg-background rounded-lg"
+                >
+                  <div className="flex-1">
+                    <h3 className="font-semibold">
+                      {booking.customer?.name || "N/A"}
+                    </h3>
+                    <div className="text-sm text-muted-foreground">
+                      {booking.service_name} with {booking.barber_name}
+                    </div>
+                    <div className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(booking.booking_date).toLocaleDateString()}
+                    </div>
+                    <div className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {booking.booking_time}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={
+                        booking.status === "confirmed"
+                          ? "default"
+                          : booking.status === "pending"
+                            ? "secondary"
+                            : "destructive"
+                      }
+                    >
+                      {booking.status}
+                    </Badge>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedBooking(booking);
+                        setIsViewBookingDialogOpen(true);
+                      }}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

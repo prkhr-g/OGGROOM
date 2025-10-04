@@ -43,6 +43,7 @@ import {
 import {
   getUpcomingBookings,
   getPreviousBookings,
+  getAllCustomerBookings,
 } from "@/lib/booking-actions";
 import { useAuth } from "@/components/auth-provider";
 import {
@@ -167,17 +168,28 @@ export default function CustomerHomeScreen() {
     useState<Booking | null>(null);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
 
+  const today = new Date().toISOString().split("T")[0];
+
   const fetchBookings = useCallback(async () => {
     if (!user) return;
-    const [upcomingResult, previousResult] = await Promise.all([
-      getUpcomingBookings(),
-      getPreviousBookings(),
-    ]);
-    if (upcomingResult.error) throw new Error(upcomingResult.error);
-    setUpcomingBookings(upcomingResult.bookings || []);
-    if (previousResult.error) throw new Error(previousResult.error);
-    setPreviousBookings(previousResult.bookings || []);
-  }, [user]);
+    const allBookingsResult = await getAllCustomerBookings();
+    if (allBookingsResult.error) throw new Error(allBookingsResult.error);
+
+    const upcoming = (allBookingsResult.bookings || []).filter(
+      (booking) =>
+        (booking.status === "confirmed" || booking.status === "pending") &&
+        booking.booking_date >= today
+    );
+
+    const previous = (allBookingsResult.bookings || []).filter(
+      (booking) =>
+        booking.status === "completed" ||
+        (booking.booking_date < today && booking.status !== "cancelled")
+    );
+
+    setUpcomingBookings(upcoming);
+    setPreviousBookings(previous);
+  }, [user, getAllCustomerBookings, today]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -300,7 +312,7 @@ export default function CustomerHomeScreen() {
     }
   };
 
-  const handleCancelBooking = async (bookingId: number) => {
+  const handleCancelBooking = useCallback(async (bookingId: number) => {
     setCancellingId(bookingId);
     try {
       const response = await fetch(
@@ -320,7 +332,7 @@ export default function CustomerHomeScreen() {
     } finally {
       setCancellingId(null);
     }
-  };
+  }, [fetchBookings]);
 
   if (isLoading) {
     return (

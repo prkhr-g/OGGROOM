@@ -12,8 +12,6 @@ export async function getUpcomingBookings() {
     return { bookings: [] };
   }
 
-  const today = new Date().toISOString().split("T")[0];
-
   const { data: bookingsData, error: bookingsError } = await supabase
     .from("bookings")
     .select(
@@ -33,8 +31,6 @@ export async function getUpcomingBookings() {
     `,
     )
     .eq("customer_id", user.id)
-    .in("status", ["confirmed", "pending"])
-    .gte("booking_date", today)
     .order("booking_date", { ascending: true })
     .order("booking_time", { ascending: true });
 
@@ -89,7 +85,6 @@ export async function getPreviousBookings() {
     return { bookings: [] };
   }
 
-  // Step 1: Fetch previous bookings without the direct service join
   const { data: bookingsData, error: bookingsError } = await supabase
     .from("bookings")
     .select(
@@ -108,7 +103,6 @@ export async function getPreviousBookings() {
     `,
     )
     .eq("customer_id", user.id)
-    .or(`status.eq.completed,and(booking_date.lt.${today},status.neq.cancelled)`)
     .order("booking_date", { ascending: false })
     .order("booking_time", { ascending: false });
 
@@ -148,6 +142,79 @@ export async function getPreviousBookings() {
   const servicesMap = new Map(servicesData.map((s) => [s.id, s]));
 
   // Step 5: Combine the bookings with their service details
+  const enrichedBookings = bookingsData.map((booking) => {
+    const services = (booking.service_ids || [])
+      .map((id) => servicesMap.get(id))
+      .filter(Boolean);
+    return { ...booking, services };
+  });
+
+  return { bookings: enrichedBookings };
+}
+
+export async function getAllCustomerBookings() {
+  const supabase = createServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { bookings: [] };
+  }
+
+  const { data: bookingsData, error: bookingsError } = await supabase
+    .from("bookings")
+    .select(
+      `
+      id,
+      booking_date,
+      booking_time,
+      status,
+      service_ids,
+      completion_otp,
+      shops (
+        id,
+        name,
+        address
+      ),
+      barbers ( name )
+    `,
+    )
+    .eq("customer_id", user.id)
+    .order("booking_date", { ascending: true })
+    .order("booking_time", { ascending: true });
+
+  if (bookingsError) {
+    return { error: bookingsError.message };
+  }
+
+  if (!bookingsData || bookingsData.length === 0) {
+    return { bookings: [] };
+  }
+
+  const serviceIds = [
+    ...new Set(bookingsData.flatMap((b) => b.service_ids || [])),
+  ];
+
+  if (serviceIds.length === 0) {
+    const bookingsWithEmptyServices = bookingsData.map((b) => ({
+      ...b,
+      services: [],
+    }));
+    return { bookings: bookingsWithEmptyServices };
+  }
+
+  const { data: servicesData, error: servicesError } = await supabase
+    .from("services")
+    .select("id, name, price, duration")
+    .in("id", serviceIds);
+
+  if (servicesError) {
+    return { error: servicesError.message };
+  }
+
+  const servicesMap = new Map(servicesData.map((s) => [s.id, s]));
+
   const enrichedBookings = bookingsData.map((booking) => {
     const services = (booking.service_ids || [])
       .map((id) => servicesMap.get(id))
