@@ -23,6 +23,7 @@ export async function getUpcomingBookings() {
       booking_time,
       status,
       service_ids,
+      completion_otp,
       shops (
         id,
         name,
@@ -107,7 +108,7 @@ export async function getPreviousBookings() {
     `,
     )
     .eq("customer_id", user.id)
-    .lt("booking_date", new Date().toISOString().split("T")[0])
+    .or(`status.eq.completed,and(booking_date.lt.${today},status.neq.cancelled)`)
     .order("booking_date", { ascending: false })
     .order("booking_time", { ascending: false });
 

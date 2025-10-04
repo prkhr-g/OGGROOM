@@ -103,7 +103,7 @@ export async function POST(request: Request) {
           "Content-Type": "application/json",
           "x-client-id": process.env.CASHFREE_CLIENT_ID as string,
           "x-client-secret": process.env.CASHFREE_CLIENT_SECRET as string,
-          "x-api-version": "2022-09-01", // Using a stable, recent version
+          "x-api-version": "2025-01-01", // Using a stable, recent version
         },
         body: JSON.stringify(requestBody),
       },

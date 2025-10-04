@@ -185,7 +185,7 @@ export async function POST(request: Request) {
     const { error: shopError } = await supabase
       .from("shops")
       .update({ vendor_id: created_vendor_id })
-      .eq("id", shopId); // Use shopId to update the correct shop
+      .eq("id", shop_id); // Use shopId to update the correct shop
 
     if (shopError) {
       console.error("Error updating shops table:", shopError);

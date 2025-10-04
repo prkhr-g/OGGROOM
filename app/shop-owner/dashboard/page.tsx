@@ -125,6 +125,12 @@ function ShopOwnerDashboardContent() {
   );
 
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [otpValue, setOtpValue] = useState("");
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
+  const [isViewBookingDialogOpen, setIsViewBookingDialogOpen] = useState(false);
 
   // Data states
   const [todayBookings, setTodayBookings] = useState<Booking[]>([]);
@@ -346,17 +352,61 @@ function ShopOwnerDashboardContent() {
     setShowServicesManagement(false);
   };
 
-  // Mock functions
-  const updateBookingStatus = async (bookingId: number, newStatus: string) => {
-    const result = await updateBookingStatusInDb(bookingId, newStatus);
+  const handleCancelBooking = async (bookingId: number) => {
+    const result = await updateBookingStatusInDb(bookingId, "cancelled");
     if (result.error) {
       setError(result.error);
       return;
     }
     setTodayBookings((p) =>
-      p.map((b) => (b.id === bookingId ? { ...b, status: newStatus } : b)),
+      p.map((b) => (b.id === bookingId ? { ...b, status: "cancelled" } : b))
     );
+    setSelectedBooking(null);
   };
+
+  const handleVerifyOtp = async () => {
+    if (!selectedBooking) return;
+
+    setIsVerifyingOtp(true);
+    setOtpError(null);
+
+    try {
+      const response = await fetch(
+        `/api/shop-owner/bookings/${selectedBooking.id}/verify-otp`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ otp: otpValue }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to verify OTP.");
+      }
+
+      // Update booking status in the UI
+      setTodayBookings((prev) =>
+        prev.map((b) =>
+          b.id === selectedBooking.id ? { ...b, status: "completed" } : b
+        )
+      );
+
+      // Close all dialogs
+      setSelectedBooking(null);
+      setIsCompleteDialogOpen(false);
+      setOtpValue("");
+    } catch (error: any) {
+      setOtpError(error.message);
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
+
+
 
   if (isLoading)
     return (
@@ -540,7 +590,10 @@ function ShopOwnerDashboardContent() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setSelectedBooking(booking)}
+                            onClick={() => {
+                              setSelectedBooking(booking);
+                              setIsViewBookingDialogOpen(true);
+                            }}
                           >
                             <Eye className="h-4 w-4" />
                           </Button>
@@ -1036,11 +1089,104 @@ function ShopOwnerDashboardContent() {
         )}
       </main>
 
-      {/* Booking Details Dialog */}
+
+
+      {/* Cancel Dialog */}
       {selectedBooking && (
         <Dialog
-          open={!!selectedBooking}
-          onOpenChange={() => setSelectedBooking(null)}
+          open={isCancelDialogOpen}
+          onOpenChange={() => setIsCancelDialogOpen(false)}
+        >
+          <DialogContent className="bg-card">
+            <DialogHeader>
+              <DialogTitle>Are you sure?</DialogTitle>
+              <DialogDescription>
+                This action cannot be undone. This will permanently cancel the
+                booking.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsCancelDialogOpen(false)}
+              >
+                Go Back
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleCancelBooking(selectedBooking.id)}
+              >
+                Confirm Cancel
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Complete Dialog */}
+      {selectedBooking && (
+        <Dialog
+          open={isCompleteDialogOpen}
+          onOpenChange={() => {
+            setIsCompleteDialogOpen(false);
+            setOtpValue("");
+            setOtpError(null);
+          }}
+        >
+          <DialogContent className="bg-card">
+            <DialogHeader>
+              <DialogTitle>Enter OTP to Complete Booking</DialogTitle>
+              <DialogDescription>
+                Please enter the 4-digit OTP from the customer to complete the booking.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <Input
+                type="text"
+                maxLength={4}
+                value={otpValue}
+                onChange={(e) => setOtpValue(e.target.value)}
+                className="text-center text-2xl tracking-widest"
+              />
+              {otpError && <p className="text-destructive text-sm">{otpError}</p>}
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsCompleteDialogOpen(false);
+                  setOtpValue("");
+                  setOtpError(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleVerifyOtp}
+                disabled={isVerifyingOtp || otpValue.length !== 4}
+              >
+                {isVerifyingOtp ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  "Verify & Complete"
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* View Booking Dialog */}
+      {selectedBooking && (
+        <Dialog
+          open={isViewBookingDialogOpen}
+          onOpenChange={() => {
+            setIsViewBookingDialogOpen(false);
+            setSelectedBooking(null);
+          }}
         >
           <DialogContent className="bg-card">
             <DialogHeader>
@@ -1088,21 +1234,8 @@ function ShopOwnerDashboardContent() {
               {selectedBooking.status === "pending" && (
                 <>
                   <Button
-                    variant="outline"
-                    onClick={() => {
-                      updateBookingStatus(selectedBooking.id, "confirmed");
-                      setSelectedBooking(null);
-                    }}
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Confirm
-                  </Button>
-                  <Button
                     variant="destructive"
-                    onClick={() => {
-                      updateBookingStatus(selectedBooking.id, "cancelled");
-                      setSelectedBooking(null);
-                    }}
+                    onClick={() => setIsCancelDialogOpen(true)}
                   >
                     <XCircle className="h-4 w-4 mr-2" />
                     Cancel
@@ -1110,16 +1243,23 @@ function ShopOwnerDashboardContent() {
                 </>
               )}
               {selectedBooking.status === "confirmed" && (
-                <Button
-                  variant="destructive"
-                  onClick={() => {
-                    updateBookingStatus(selectedBooking.id, "cancelled");
-                    setSelectedBooking(null);
-                  }}
-                >
-                  <XCircle className="h-4 w-4 mr-2" />
-                  Cancel
-                </Button>
+                <>
+                  <Button
+                    variant="destructive"
+                    onClick={() => setIsCancelDialogOpen(true)}
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setIsCompleteDialogOpen(true);
+                    }}
+                  >
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Complete
+                  </Button>
+                </>
               )}
             </div>
           </DialogContent>

@@ -23,7 +23,7 @@ export async function POST(request: Request) {
           "Content-Type": "application/json",
           "x-client-id": process.env.CASHFREE_CLIENT_ID as string,
           "x-client-secret": process.env.CASHFREE_CLIENT_SECRET as string,
-          "x-api-version": "2022-09-01",
+          "x-api-version": "2025-01-01",
         },
       },
     );
@@ -68,6 +68,7 @@ export async function POST(request: Request) {
     }
 
     
+    const completionOtp = Math.floor(1000 + Math.random() * 9000).toString();
     const { error: bookingError } = await supabase.from("bookings").insert([
       {
         customer_id: pendingBooking.customer_id,
@@ -80,6 +81,7 @@ export async function POST(request: Request) {
         total_duration: pendingBooking.total_duration,
         customer_notes: pendingBooking.customer_notes,
         status: "confirmed", // Set status to confirmed
+        completion_otp: completionOtp,
       },
     ]);
 

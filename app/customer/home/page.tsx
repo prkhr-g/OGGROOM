@@ -83,6 +83,7 @@ interface Booking {
   booking_date: string;
   booking_time: string;
   status: string;
+  completion_otp: string;
 }
 
 function ReviewDialog({ booking, isOpen, onOpenChange, onSubmit }) {
@@ -557,6 +558,12 @@ export default function CustomerHomeScreen() {
                         </div>
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto mt-3 sm:mt-0">
                           <Badge>{booking.status}</Badge>
+                          {booking.completion_otp && (
+                            <div className="flex items-center gap-1 text-sm">
+                              <span className="font-semibold">OTP:</span>
+                              <span>{booking.completion_otp}</span>
+                            </div>
+                          )}
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button
