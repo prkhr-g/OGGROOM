@@ -168,6 +168,7 @@ export default function CustomerHomeScreen() {
   const [selectedBookingForReview, setSelectedBookingForReview] =
     useState<Booking | null>(null);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [isThankYouDialogOpen, setIsThankYouDialogOpen] = useState(false);
 
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
@@ -324,6 +325,9 @@ export default function CustomerHomeScreen() {
     if (!response.ok) {
       const { error } = await response.json();
       setError(error);
+    } else {
+      setIsReviewDialogOpen(false);
+      setIsThankYouDialogOpen(true);
     }
   };
 
@@ -649,6 +653,19 @@ export default function CustomerHomeScreen() {
               )}
             </AnimatedTabsContent>
             <AnimatedTabsContent value="previous">
+              <Dialog open={isThankYouDialogOpen} onOpenChange={setIsThankYouDialogOpen}>
+                <DialogContent className="bg-card">
+                  <DialogHeader>
+                    <DialogTitle>Thank You!</DialogTitle>
+                    <DialogDescription>
+                      Your review has been submitted successfully.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button onClick={() => setIsThankYouDialogOpen(false)}>Close</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
               {selectedBookingForReview && (
                 <ReviewDialog
                   booking={selectedBookingForReview}
