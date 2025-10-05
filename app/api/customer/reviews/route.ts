@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     // First, get the shop_id from the booking
     const { data: bookingData, error: bookingError } = await supabase
       .from("bookings")
-      .select("shop_id, customer_id")
+      .select("shop_id, customer_id, status")
       .eq("id", booking_id)
       .single();
 
@@ -37,6 +37,14 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "You are not authorized to review this booking" },
         { status: 403 },
+      );
+    }
+
+    // Check if the booking is completed
+    if (bookingData.status !== 'completed') {
+      return NextResponse.json(
+        { error: "You can only review completed bookings" },
+        { status: 403 }
       );
     }
 

@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import {
   getAllData,
   getCustomerProfile,
@@ -160,13 +160,28 @@ export default function CustomerHomeScreen() {
     string | null
   >(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [submittedQuery, setSubmittedQuery] = useState("");
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isSearchDataLoaded, setIsSearchDataLoaded] = useState(false);
   const [isSearchLoading, setIsSearchLoading] = useState(false);
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   const [selectedBookingForReview, setSelectedBookingForReview] =
     useState<Booking | null>(null);
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setIsPopoverOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [searchContainerRef]);
 
   const today = new Date().toISOString().split("T")[0];
 
@@ -266,11 +281,19 @@ export default function CustomerHomeScreen() {
     }
   };
 
+  const handleSearch = () => {
+    if (searchQuery) {
+      loadSearchData();
+      setSubmittedQuery(searchQuery);
+      setIsPopoverOpen(true);
+    }
+  };
+
   const searchResults = useMemo(() => {
-    if (!searchQuery) {
+    if (!submittedQuery) {
       return [];
     }
-    const lowercasedQuery = searchQuery.toLowerCase();
+    const lowercasedQuery = submittedQuery.toLowerCase();
     return allShops.filter((shop) => {
       if (shop.name.toLowerCase().includes(lowercasedQuery)) return true;
       if (shop.address.toLowerCase().includes(lowercasedQuery)) return true;
@@ -285,15 +308,7 @@ export default function CustomerHomeScreen() {
         return true;
       return false;
     });
-  }, [searchQuery, allShops, allServices]);
-
-  useEffect(() => {
-    if (searchQuery && searchResults.length > 0) {
-      setIsSearchOpen(true);
-    } else {
-      setIsSearchOpen(false);
-    }
-  }, [searchQuery, searchResults]);
+  }, [submittedQuery, allShops, allServices]);
 
   const handleReviewSubmit = async (
     booking_id: number,
@@ -461,23 +476,23 @@ export default function CustomerHomeScreen() {
 
       <main className="px-4 sm:px-6 md:px-8 lg:px-12 flex-1 container py-6 space-y-8">
         {/* Search Section - Kept for functionality */}
-        <section>
+        <section ref={searchContainerRef}>
           <div className="flex gap-4">
             <div className="flex-1 relative">
-              <Popover open={isSearchOpen} onOpenChange={setIsSearchOpen}>
-                <PopoverTrigger asChild>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search salons, services, or locations..."
-                      className="pl-10 bg-card"
-                      value={searchQuery}
-                      onFocus={loadSearchData}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-                </PopoverTrigger>
-                <PopoverContent className="w-[--radix-popover-trigger-width] max-h-60 overflow-y-auto">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search salons, services, or locations..."
+                className="pl-10 bg-card"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleSearch();
+                  }
+                }}
+              />
+              {isPopoverOpen && (
+                <div className="absolute top-full mt-2 w-full rounded-md border bg-popover p-1 text-popover-foreground shadow-md z-50 max-h-60 overflow-y-auto">
                   {isSearchLoading ? (
                     <div className="flex items-center justify-center p-4">
                       <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -489,6 +504,7 @@ export default function CustomerHomeScreen() {
                           key={shop.id}
                           href={`/customer/shop/${shop.id}`}
                           className="block"
+                          onClick={() => setIsPopoverOpen(false)}
                         >
                           <div className="p-2 hover:bg-accent rounded-md">
                             <p className="font-semibold">{shop.name}</p>
@@ -504,9 +520,10 @@ export default function CustomerHomeScreen() {
                       No results found.
                     </p>
                   )}
-                </PopoverContent>
-              </Popover>
+                </div>
+              )}
             </div>
+            <Button onClick={handleSearch}>Search</Button>
           </div>
         </section>
 
