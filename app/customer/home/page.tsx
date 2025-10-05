@@ -485,7 +485,7 @@ export default function CustomerHomeScreen() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search salons, services, or locations..."
+                placeholder="Search salons, spas, barbershops..."
                 className="pl-10 bg-card"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
