@@ -638,7 +638,7 @@ export async function getShopBookings(shopId: string) {
       `,
       )
       .eq("shop_id", shopId)
-      .order("booking_date", { ascending: true })
+      .order("booking_date", { ascending: false })
       .order("booking_time", { ascending: true });
 
     if (error) {
