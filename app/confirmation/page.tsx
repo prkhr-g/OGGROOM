@@ -121,6 +121,7 @@ function ConfirmationFlow() {
   const [error, setError] = useState<string | null>(null);
   const [isBooking, setIsBooking] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
+  const [bookingComplete, setBookingComplete] = useState(false);
 
   const shopId = searchParams.get("shop");
   const serviceIds = searchParams.get("services")?.split(",").map(Number) || [];
@@ -213,7 +214,7 @@ function ConfirmationFlow() {
           status: "confirmed", // Or 'pending_payment_at_shop'
         });
         if (result.error) throw new Error(result.error);
-        router.push("/customer/home"); // Redirect to bookings page on success
+        setBookingComplete(true);
       }
     } catch (err: any) {
       setError(err.message);
@@ -221,6 +222,25 @@ function ConfirmationFlow() {
       setIsBooking(false);
     }
   };
+
+  if (bookingComplete) {
+    return (
+      <div className="flex flex-col items-center text-center gap-4">
+        <CheckCircle className="h-10 w-10 text-green-500" />
+        <div>
+          <h3 className="text-xl font-semibold text-green-500">
+            Booking Confirmed!
+          </h3>
+          <p className="text-green-500/80 mt-1">
+            Your appointment has been successfully scheduled.
+          </p>
+        </div>
+        <Link href="/customer/home">
+          <Button>Go to My Bookings</Button>
+        </Link>
+      </div>
+    );
+  }
 
   if (isLoading || authLoading) {
     return (
@@ -250,6 +270,10 @@ function ConfirmationFlow() {
 
   return (
     <div>
+      <Button variant="outline" onClick={() => router.back()} className="mb-4">
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back
+      </Button>
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Booking Summary</CardTitle>

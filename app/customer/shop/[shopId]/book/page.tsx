@@ -32,6 +32,8 @@ interface Shop {
   closing_time: string;
   services: Service[];
   barbers: Barber[];
+  closed_from: string | null;
+  closed_to: string | null;
 }
 
 interface Service {
@@ -74,6 +76,7 @@ function BookAppointmentScreenContent() {
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [allTimeSlots, setAllTimeSlots] = useState<TimeSlot[]>([]);
   const [isFetchingSlots, setIsFetchingSlots] = useState(false);
+  const [isShopClosed, setIsShopClosed] = useState(false);
 
   const formatDateToYYYYMMDD = (date: Date) => {
     const year = date.getFullYear();
@@ -139,8 +142,29 @@ function BookAppointmentScreenContent() {
   }, [selectedServicesDetails]);
 
   useEffect(() => {
+    if (shop && selectedDate) {
+      if (shop.closed_from && shop.closed_to) {
+        const bookingDate = new Date(selectedDate);
+        bookingDate.setHours(0, 0, 0, 0);
+        const closedFrom = new Date(shop.closed_from);
+        closedFrom.setHours(0, 0, 0, 0);
+        const closedTo = new Date(shop.closed_to);
+        closedTo.setHours(0, 0, 0, 0);
+
+        if (bookingDate >= closedFrom && bookingDate <= closedTo) {
+          setIsShopClosed(true);
+        } else {
+          setIsShopClosed(false);
+        }
+      } else {
+        setIsShopClosed(false);
+      }
+    }
+  }, [shop, selectedDate]);
+
+  useEffect(() => {
     const fetchTimeSlots = async () => {
-      if (selectedBarberId && selectedDate && shopId) {
+      if (selectedBarberId && selectedDate && shopId && !isShopClosed) {
         setIsFetchingSlots(true);
         setError(null);
         try {
@@ -483,13 +507,17 @@ function BookAppointmentScreenContent() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {isFetchingSlots ? (
+                {isShopClosed ? (
+                  <p className="text-destructive text-center py-8">
+                    This shop is closed on the selected date.
+                  </p>
+                ) : isFetchingSlots ? (
                   <div className="flex justify-center py-8">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                   </div>
                 ) : allTimeSlots.length === 0 ? (
                   <p className="text-muted-foreground text-center py-8">
-                    No slots available for this date. The shop might be closed.
+                    No slots available for this date. This shop is closed on the selected date.
                   </p>
                 ) : (
                   <div className="grid grid-cols-3 gap-2">

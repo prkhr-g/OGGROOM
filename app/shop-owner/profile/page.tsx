@@ -48,6 +48,9 @@ import {
   getShopOwnerProfile,
   updateShopStatus,
   createShopOwnerProfile,
+  setShopClosure,
+  cancelBookings,
+  clearShopClosure,
 } from "@/lib/profile-actions";
 import { VendorIdForm } from "@/components/ui/vendor-id-form";
 import {
@@ -60,6 +63,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+
+import { DatePicker } from "@/components/ui/date-picker";
+import { DateRange } from "react-day-picker";
+import { format } from "date-fns";
 
 const AddressAutocompleteInput = dynamic(
   () =>
@@ -89,6 +96,8 @@ interface ShopOwnerProfile {
     closing_time: string;
     shop_latitude: number | null;
     shop_longitude: number | null;
+    closed_from: string | null;
+    closed_to: string | null;
   };
 }
 
@@ -106,6 +115,9 @@ function ShopOwnerProfilePageContent() {
   const [success, setSuccess] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [closureDates, setClosureDates] = useState<DateRange | undefined>();
+  const [isConfirmingClosure, setIsConfirmingClosure] = useState(false);
+  const [conflictingBookings, setConflictingBookings] = useState<any[]>([]);
 
   const [editData, setEditData] = useState({
     ownerName: "",
@@ -121,11 +133,10 @@ function ShopOwnerProfilePageContent() {
   });
 
   useEffect(() => {
-    console.log("Auth Loading:", authLoading, "User in useEffect:", user);
     if (user) {
       loadProfile();
     }
-  }, [user, authLoading]);
+  }, [user]);
 
   const loadProfile = async () => {
     try {
@@ -154,11 +165,87 @@ function ShopOwnerProfilePageContent() {
             5,
           ),
         });
+        setClosureDates({
+          from: result.profile.shop.closed_from ? new Date(result.profile.shop.closed_from) : undefined,
+          to: result.profile.shop.closed_to ? new Date(result.profile.shop.closed_to) : undefined,
+        });
       }
     } catch (error) {
       setError("Failed to load profile");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSetClosure = async () => {
+    if (!profile || !closureDates?.from || !closureDates?.to) {
+      setError("Please select a valid date range.");
+      return;
+    }
+
+    setError("");
+    setSuccess("");
+
+    const result = await setShopClosure(
+      profile.shop.id,
+      format(closureDates.from, 'yyyy-MM-dd'),
+      format(closureDates.to, 'yyyy-MM-dd')
+    );
+
+    if (result.error) {
+      setError(result.error);
+    } else if (result.conflictingBookings) {
+      setConflictingBookings(result.conflictingBookings);
+      setIsConfirmingClosure(true);
+    } else {
+      setSuccess("Shop closure dates have been set successfully.");
+      await loadProfile();
+    }
+  };
+
+  const handleConfirmAndCancel = async () => {
+    if (!profile || !closureDates?.from || !closureDates?.to) return;
+
+    const bookingIds = conflictingBookings.map(b => b.id);
+    const cancelResult = await cancelBookings(bookingIds);
+
+    if (cancelResult.error) {
+      setError(cancelResult.error);
+      setIsConfirmingClosure(false);
+      return;
+    }
+
+    const closureResult = await setShopClosure(
+      profile.shop.id,
+      format(closureDates.from, 'yyyy-MM-dd'),
+      format(closureDates.to, 'yyyy-MM-dd'),
+      true // Force closure
+    );
+
+    if (closureResult.error) {
+      setError(closureResult.error);
+    } else {
+      setSuccess("Conflicting bookings have been cancelled and closure dates have been set.");
+      await loadProfile();
+    }
+
+    setIsConfirmingClosure(false);
+    setConflictingBookings([]);
+  };
+
+  const handleClearClosure = async () => {
+    if (!profile) return;
+
+    setError("");
+    setSuccess("");
+
+    const result = await clearShopClosure(profile.shop.id);
+
+    if (result.error) {
+      setError(result.error);
+    } else {
+      setSuccess("Shop closure dates have been cleared.");
+      await loadProfile();
     }
   };
 
@@ -529,6 +616,70 @@ function ShopOwnerProfilePageContent() {
               )}
             </CardContent>
           </Card>
+
+          <Card className="bg-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Shop Closure
+              </CardTitle>
+              <CardDescription>
+                Set a date range to temporarily close your shop. Bookings within this period will be blocked.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {profile?.shop?.closed_from && profile?.shop?.closed_to ? (
+                <div className="p-3 rounded-md bg-muted text-muted-foreground text-sm">
+                  <p>
+                    Your shop is scheduled to be closed from{" "}
+                    <strong>{format(new Date(profile.shop.closed_from), "PPP")}</strong> to{" "}
+                    <strong>{format(new Date(profile.shop.closed_to), "PPP")}</strong>.
+                  </p>
+                  <Button variant="link" className="p-0 h-auto mt-1" onClick={handleClearClosure}>Clear closure dates</Button>
+                </div>
+              ) : null}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label>From</Label>
+                  <DatePicker
+                    date={closureDates?.from}
+                    setDate={(date) => setClosureDates((prev) => ({ ...prev, from: date }))}
+                  />
+                </div>
+                <div>
+                  <Label>To</Label>
+                  <DatePicker
+                    date={closureDates?.to}
+                    setDate={(date) => setClosureDates((prev) => ({ ...prev, to: date }))}
+                  />
+                </div>
+              </div>
+              <Button onClick={handleSetClosure}>Set Closure Period</Button>
+            </CardContent>
+          </Card>
+
+          <AlertDialog open={isConfirmingClosure} onOpenChange={setIsConfirmingClosure}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Warning: Conflicting Bookings</AlertDialogTitle>
+                <AlertDialogDescription>
+                  You have existing bookings in the selected closure period. Setting these dates will CANCEL the following bookings:
+                  <ul className="mt-2 list-disc list-inside">
+                    {conflictingBookings.map(booking => (
+                      <li key={booking.id}>
+                        {booking.customer.name} on {new Date(booking.booking_date).toLocaleDateString()} at {booking.booking_time}
+                      </li>
+                    ))}
+                  </ul>
+                  Are you sure you want to proceed?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Go Back</AlertDialogCancel>
+                <AlertDialogAction onClick={handleConfirmAndCancel}>Confirm & Cancel Bookings</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           {profile && (
             <Card className="bg-card">

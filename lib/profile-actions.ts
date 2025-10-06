@@ -95,7 +95,7 @@ export async function getShopOwnerProfile(userId: string) {
         phone,
         created_at,
         vendor_id,
-        shop:shops(id, name, type, address, is_open, opening_time, closing_time, shop_latitude, shop_longitude)
+        shop:shops(id, name, type, address, is_open, opening_time, closing_time, shop_latitude, shop_longitude, closed_from, closed_to)
       `,
       )
       .eq("id", userId)
@@ -482,6 +482,27 @@ export async function getAvailableTimeSlots(
 ) {
   const supabase = createServerClient();
   try {
+    // First, check if the shop is closed on the selected date
+    const { data: shopData, error: shopError } = await supabase
+      .from("shops")
+      .select("closed_from, closed_to")
+      .eq("id", shopId)
+      .single();
+
+    if (shopError) {
+      return { error: "Failed to fetch shop details: " + shopError.message };
+    }
+
+    if (shopData && shopData.closed_from && shopData.closed_to) {
+      const bookingDate = new Date(date);
+      const closedFrom = new Date(shopData.closed_from);
+      const closedTo = new Date(shopData.closed_to);
+
+      if (bookingDate >= closedFrom && bookingDate <= closedTo) {
+        return { timeSlots: [], bookedSlots: [] }; // Shop is closed, return no slots
+      }
+    }
+
     const { data, error } = await supabase.rpc("get_available_time_slots", {
       p_shop_id: shopId,
       p_barber_id: barberId,
@@ -557,6 +578,8 @@ export async function getShopDetailsForCustomer(shopId: string) {
         closing_time,
         shop_latitude,
         shop_longitude,
+        closed_from,
+        closed_to,
         services(*),
         barbers(id, name, specialties, experience)
       `,
@@ -702,4 +725,70 @@ export async function getNearbyShops(
   } catch (error: any) {
     return { error: "Failed to fetch nearby shops: " + error.message };
   }
+}
+
+export async function setShopClosure(
+  shopId: string,
+  from: string,
+  to: string,
+  force: boolean = false,
+) {
+  const supabase = createServerClient();
+
+  if (!force) {
+    const { data: conflictingBookings, error: bookingError } = await supabase
+      .from("bookings")
+      .select("id, booking_date, booking_time, customer:customers(name)")
+      .eq("shop_id", shopId)
+      .gte("booking_date", from)
+      .lte("booking_date", to)
+      .in("status", ["confirmed", "pending"]);
+
+    if (bookingError) {
+      return { error: "Failed to check for conflicting bookings." };
+    }
+
+    if (conflictingBookings && conflictingBookings.length > 0) {
+      return { conflictingBookings };
+    }
+  }
+
+  const { error } = await supabase
+    .from("shops")
+    .update({ closed_from: from, closed_to: to })
+    .eq("id", shopId);
+
+  if (error) {
+    return { error: "Failed to update shop closure dates." };
+  }
+
+  return { success: true };
+}
+
+export async function cancelBookings(bookingIds: number[]) {
+  const supabase = createServerClient();
+  const { error } = await supabase
+    .from("bookings")
+    .update({ status: "cancelled" })
+    .in("id", bookingIds);
+
+  if (error) {
+    return { error: "Failed to cancel bookings." };
+  }
+
+  return { success: true };
+}
+
+export async function clearShopClosure(shopId: string) {
+  const supabase = createServerClient();
+  const { error } = await supabase
+    .from("shops")
+    .update({ closed_from: null, closed_to: null })
+    .eq("id", shopId);
+
+  if (error) {
+    return { error: "Failed to clear shop closure dates." };
+  }
+
+  return { success: true };
 }

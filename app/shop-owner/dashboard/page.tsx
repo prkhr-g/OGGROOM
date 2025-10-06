@@ -56,6 +56,60 @@ import {
   getShopUpcomingBookings,
 } from "@/lib/profile-actions";
 import { updateBookingStatusInDb } from "@/lib/booking-actions";
+import { Skeleton } from "@/components/ui/skeleton";
+
+function ShopOwnerDashboardSkeleton() {
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="bg-card shadow-sm border-b border-border">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-8" />
+            <div>
+              <Skeleton className="h-6 w-48" />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-10 w-10 rounded-full" />
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-6">
+        {/* Stats Section */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, index) => (
+            <Card key={index} className="bg-card">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Skeleton className="h-4 w-24 mb-2" />
+                    <Skeleton className="h-8 w-16" />
+                  </div>
+                  <Skeleton className="w-12 h-12 rounded-full" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Quick Actions */}
+        <Card className="bg-card">
+          <CardHeader>
+            <Skeleton className="h-7 w-40" />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[...Array(4)].map((_, index) => (
+                <Skeleton key={index} className="h-20 w-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </main>
+    </div>
+  );
+}
 
 // Interfaces
 interface Booking {
@@ -141,6 +195,7 @@ function ShopOwnerDashboardContent() {
   const [services, setServices] = useState<Service[]>([]);
   const [barbers, setBarbers] = useState<Barber[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [totalCompletedBookings, setTotalCompletedBookings] = useState(0);
   const [showTodaysAppointments, setShowTodaysAppointments] = useState(false);
   const [showServicesManagement, setShowServicesManagement] = useState(false);
   const [showTeamManagement, setShowTeamManagement] = useState(false);
@@ -186,6 +241,12 @@ function ShopOwnerDashboardContent() {
         throw new Error(
           dashboardResult.error || "Failed to fetch dashboard data",
         );
+
+      setTotalCompletedBookings(
+        (dashboardResult.data.bookings || []).filter(
+          (b: any) => b.status === "completed",
+        ).length,
+      );
 
       const upcomingBookingsResult = await getShopUpcomingBookings(
         profileResult.profile.shop.id,
@@ -263,8 +324,8 @@ function ShopOwnerDashboardContent() {
       color: "text-blue-500",
     },
     {
-      title: "Active Customers",
-      value: "00",
+      title: "Happy Customers",
+      value: totalCompletedBookings.toString(),
       icon: Users,
       color: "text-purple-500",
     },
@@ -424,12 +485,7 @@ function ShopOwnerDashboardContent() {
 
 
 
-  if (isLoading)
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+  if (isLoading) return <ShopOwnerDashboardSkeleton />;
   if (error)
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
