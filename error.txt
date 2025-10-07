@@ -1,4 +1,53 @@
-The final argument passed to useEffect changed size between renders. The order and size of this array must remain constant.
+CREATE OR REPLACE FUNCTION public.get_nearby_shops(p_latitude double precision, p_longitude double precision, p_radius_meters double precision DEFAULT 10000)
+ RETURNS TABLE(id uuid, name character varying, type character varying, email character varying, phone character varying, address text, is_open boolean, opening_time text, closing_time text, shop_latitude double precision, shop_longitude double precision, distance_meters double precision, average_rating numeric)
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+    RAISE NOTICE 'p_latitude: %', p_latitude;
+    RAISE NOTICE 'p_longitude: %', p_longitude;
 
-Previous: [[object Object], [object Object]]
-Incoming: [[object Object], [object Object], (...args) => server(...args)]
+    RETURN QUERY
+    SELECT
+        s.id,
+        s.name,
+        s.type,
+        s.email,
+        s.phone,
+        s.address,
+        s.is_open,
+        s.opening_time::text,
+        s.closing_time::text,
+        s.shop_latitude,
+        s.shop_longitude,
+        ST_Distance(
+            ST_SetSRID(ST_MakePoint(s.shop_longitude, s.shop_latitude), 4326)::geography,
+            ST_SetSRID(ST_MakePoint(p_longitude, p_latitude), 4326)::geography
+        ) AS distance_meters,
+        COALESCE(AVG(r.rating), 0)::NUMERIC(3, 2) as average_rating
+    FROM
+        public.shops s
+    LEFT JOIN
+        public.reviews r ON s.id = r.shop_id
+    WHERE
+        s.shop_latitude IS NOT NULL AND s.shop_longitude IS NOT NULL AND
+        ST_DWithin(
+            ST_SetSRID(ST_MakePoint(s.shop_longitude, s.shop_latitude), 4326)::geography,
+            ST_SetSRID(ST_MakePoint(p_longitude, p_latitude), 4326)::geography,
+            p_radius_meters
+        )
+    GROUP BY
+        s.id,
+        s.name,
+        s.type,
+        s.email,
+        s.phone,
+        s.address,
+        s.is_open,
+        s.opening_time,
+        s.closing_time,
+        s.shop_latitude,
+        s.shop_longitude
+    ORDER BY
+        distance_meters;
+END;
+$function$

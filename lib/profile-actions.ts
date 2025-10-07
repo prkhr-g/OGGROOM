@@ -12,10 +12,6 @@ export async function getCustomerProfile(userId: string) {
       .eq("id", userId)
       .single();
 
-    if (error) {
-      return { error: error.message };
-    }
-
     return { profile: data };
   } catch (error: any) {
     return { error: "Failed to fetch customer profile: " + error.message };
