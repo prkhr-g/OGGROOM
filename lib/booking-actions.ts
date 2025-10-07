@@ -181,8 +181,8 @@ export async function getAllCustomerBookings() {
     `,
     )
     .eq("customer_id", user.id)
-    .order("booking_date", { ascending: true })
-    .order("booking_time", { ascending: true });
+    .order("booking_date", { ascending: false })
+    .order("booking_time", { ascending: false });
 
   if (bookingsError) {
     return { error: bookingsError.message };
