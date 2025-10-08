@@ -88,6 +88,10 @@ export function VendorIdForm({
             Please provide your details to generate a vendor ID for receiving
             payments.
           </DialogDescription>
+          <p className="text-xs text-amber-600 dark:text-amber-400 pt-2">
+            Note: It is mandatory to collect the payment online at the time of
+            booking.
+          </p>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">

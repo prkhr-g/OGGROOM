@@ -383,6 +383,9 @@ export default function AuthScreen() {
                             )}
                           </Button>
                         </div>
+                        <p className="text-xs text-muted-foreground">
+                          Please remember your password.
+                        </p>
                       </div>
                     </>
                   ) : (
@@ -465,6 +468,9 @@ export default function AuthScreen() {
                             )}
                           </Button>
                         </div>
+                        <p className="text-xs text-muted-foreground">
+                          Please remember your password.
+                        </p>
                       </div>
                     </>
                   )}
