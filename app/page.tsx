@@ -635,8 +635,8 @@ export default function LandingPage() {
         <Image
           src="/logo.png"
           alt="Oggroom"
-          width={200}
-          height={200}
+          width={100}
+          height={100}
           className="animate-pulse"
         />
       </div>
