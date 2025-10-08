@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -19,9 +19,10 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PageTransition } from "@/components/ui/page-transition";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function LandingPage() {
+function MainContent() {
   const navLinks = [
     { href: "#features", label: "Features" },
     { href: "#how-it-works", label: "How It Works" },
@@ -246,7 +247,7 @@ export default function LandingPage() {
                   <Link href="/" className="flex items-center gap-2 mb-4">
                     <Image
                       src="/logo.png"
-alt="OGGROOM Logo"
+                      alt="OGGROOM Logo"
                       width={40}
                       height={40}
                     />
@@ -615,5 +616,36 @@ alt="OGGROOM Logo"
         </div>
       </motion.footer>
     </div>
+  );
+}
+
+export default function LandingPage() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 z-50 grid place-items-center bg-white">
+        <Image
+          src="/logo.png"
+          alt="Oggroom"
+          width={200}
+          height={200}
+          className="animate-pulse"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <PageTransition>
+      <MainContent />
+    </PageTransition>
   );
 }

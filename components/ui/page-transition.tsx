@@ -6,22 +6,19 @@ import { usePathname } from "next/navigation";
 const pageVariants = {
   initial: {
     opacity: 0,
-    x: -200,
   },
   in: {
     opacity: 1,
-    x: 0,
   },
   out: {
     opacity: 0,
-    x: 200,
   },
 };
 
 const pageTransition = {
   type: "tween",
-  ease: "anticipate",
-  duration: 0.5,
+  ease: "easeInOut",
+  duration: 0.7,
 };
 
 export function PageTransition({ children }: { children: React.ReactNode }) {

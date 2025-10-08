@@ -2,7 +2,6 @@ import type React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { AuthProvider } from "@/components/auth-provider";
-import { PageTransition } from "@/components/ui/page-transition";
 import Script from "next/script";
 import "./globals.css";
 
@@ -24,7 +23,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.className} antialiased`}>
         <AuthProvider>
-          <PageTransition>{children}</PageTransition>
+          {children}
         </AuthProvider>
         <Script
           src="https://sdk.cashfree.com/js/v3/cashfree.js"
