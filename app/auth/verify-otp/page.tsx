@@ -112,7 +112,7 @@ export default function VerifyOTPScreen() {
 
   if (!email) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full">
           <CardContent className="p-6 text-center">
             <p className="text-red-600 mb-4">Invalid verification link</p>
@@ -126,10 +126,10 @@ export default function VerifyOTPScreen() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-4">
-        <Link href="/auth">
-          <Button variant="ghost" className="text-white hover:bg-white/10">
+        <Link href={userType === "shop-owner" ? "/auth?type=shop-owner" : "/auth"}>
+          <Button variant="ghost" className="text-foreground hover:bg-white/10">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
@@ -137,11 +137,11 @@ export default function VerifyOTPScreen() {
 
         <Card>
           <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
               {success ? (
                 <CheckCircle className="h-8 w-8 text-green-600" />
               ) : (
-                <Mail className="h-8 w-8 text-blue-600" />
+                <Mail className="h-8 w-8 text-primary" />
               )}
             </div>
 
