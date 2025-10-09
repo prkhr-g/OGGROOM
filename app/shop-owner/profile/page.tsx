@@ -138,6 +138,15 @@ function ShopOwnerProfilePageContent() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (user) {
+      setEditData(prevData => ({
+        ...prevData,
+        ownerEmail: user.email || '',
+      }));
+    }
+  }, [user]);
+
   const loadProfile = async () => {
     try {
       setIsLoading(true);
@@ -169,6 +178,8 @@ function ShopOwnerProfilePageContent() {
           from: result.profile.shop.closed_from ? new Date(result.profile.shop.closed_from) : undefined,
           to: result.profile.shop.closed_to ? new Date(result.profile.shop.closed_to) : undefined,
         });
+      } else {
+        setIsEditing(true);
       }
     } catch (error) {
       setError("Failed to load profile");

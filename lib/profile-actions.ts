@@ -282,6 +282,7 @@ export async function createShopOwnerProfile(
     }
 
     const { error } = await supabase.rpc("create_shop_and_owner", {
+      p_user_id: userId,
       owner_name: profileData.ownerName,
       owner_email: profileData.ownerEmail,
       owner_phone: profileData.ownerPhone,

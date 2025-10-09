@@ -127,6 +127,9 @@ function CustomerProfilePageContent() {
           latitude: result.profile.latitude || null,
           longitude: result.profile.longitude || null,
         });
+        if (!result.profile.name) {
+          setIsEditing(true);
+        }
       }
     } catch (error) {
       setError("Failed to load profile");
