@@ -92,21 +92,21 @@ function MainContent() {
     {
       quote:
         "OGGROOM has completely transformed how we manage appointments. No more overbookings or scheduling errors!",
-      name: "Michael Rodriguez",
+      name: "Harsh Laware",
       role: "Shop Owner, Elite Cuts",
       avatar: "/placeholder.svg?height=40&width=40",
     },
     {
       quote:
         "I love being able to book multiple services at once and see the exact time I'll be finished. Makes planning my day so much easier.",
-      name: "Sarah Johnson",
+      name: "Kshitija Jain",
       role: "Regular Customer",
       avatar: "/placeholder.svg?height=40&width=40",
     },
     {
       quote:
         "The smart scheduling has eliminated dead time in our shop. We're now serving more clients without feeling rushed.",
-      name: "David Chen",
+      name: "Prakhar Jain",
       role: "Shop Owner, Modern Barbers",
       avatar: "/placeholder.svg?height=40&width=40",
     },
@@ -120,11 +120,11 @@ function MainContent() {
       { label: "Beard Trimming", href: "#" },
     ],
     company: [
-      { label: "About Us", href: "#" },
+      { label: "About Us", href: "/about" },
       { label: "Contact", href: "/contact" },
     ],
     support: [
-      { label: "FAQs", href: "#" },
+      { label: "FAQs", href: "/faqs" },
       { label: "Terms & Conditions", href: "/terms" },
       { label: "Privacy Policy", href: "/privacy" },
     ],
@@ -518,7 +518,7 @@ function MainContent() {
               <Link href="/auth?type=shop-owner">
                 <Button
                   size="lg"
-                  variant="outline"
+                  variant="default"
                   className="w-full sm:text-grey-950"
                 >
                   Register Your Shop
