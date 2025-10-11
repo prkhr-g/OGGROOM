@@ -307,6 +307,7 @@ export default function CustomerHomeScreen() {
         )
       )
         return true;
+      if (shop.type.toLowerCase().includes(lowercasedQuery)) return true;
       return false;
     });
   }, [submittedQuery, allShops, allServices]);

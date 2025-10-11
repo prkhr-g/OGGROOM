@@ -99,6 +99,12 @@ export default function AuthScreen() {
     setIsLoading(true);
     setError("");
 
+    if (parseInt(customerSignupData.age, 10) < 18) {
+      setError("You must be at least 18 years old to register.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const result = await signUpCustomer(customerSignupData);
 
@@ -304,7 +310,7 @@ export default function AuthScreen() {
                               age: e.target.value,
                             })
                           }
-                          min="1"
+                          min="18"
                           required
                         />
                       </div>
