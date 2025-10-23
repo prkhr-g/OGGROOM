@@ -457,8 +457,10 @@ export async function createBooking(bookingData: {
 }) {
   const supabase = createServerClient();
   try {
+    const completionOtp = Math.floor(1000 + Math.random() * 9000).toString();
     const { error } = await supabase.from("bookings").insert({
       ...bookingData,
+      completion_otp: completionOtp,
     });
 
     if (error) {

@@ -1,23 +1,16 @@
-CREATE TABLE IF NOT EXISTS shops (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(255) NOT NULL,
-    type VARCHAR(100) NOT NULL,
-    email VARCHAR(255),
-    phone VARCHAR(20),
-    address TEXT,
-    is_open BOOLEAN DEFAULT true,
-    opening_time TIME DEFAULT '09:00:00',
-    closing_time TIME DEFAULT '18:00:00',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
 
-CREATE TABLE IF NOT EXISTS shop_owners (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    phone VARCHAR(20),
-    shop_id UUID REFERENCES shops(id) ON DELETE CASCADE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
-);
+BEGIN
+  -- Check if a customer profile already exists for the new user
+  IF NOT EXISTS (SELECT 1 FROM public.customers WHERE id = NEW.id) THEN
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'name', NEW.email),
+    (NEW.raw_user_meta_data->>'age')::integer,
+    NEW.raw_user_meta_data->>'sex',
+    NEW.raw_user_meta_data->>'phone',
+    NEW.raw_user_meta_data->>'location'
+  );
+  END IF;
+  RETURN NEW;
+END;
