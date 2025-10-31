@@ -257,7 +257,8 @@ function ShopOwnerDashboardContent() {
       
               const today = new Date().toISOString().split('T')[0];
               const todayFilteredBookings = (dashboardResult.data.bookings || []).filter(
-                (booking: any) => booking.booking_date === today
+                (booking: any) =>
+                  booking.booking_date === today && booking.status !== "cancelled"
               );
       
               const mappedBookings = (todayFilteredBookings || []).map(
