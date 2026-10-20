@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "OGGROOM - Smart Salon & Barbershop Booking",
   description:
     "Book your salon appointments with ease. Smart scheduling for customers and shop owners.",
-  generator: "v0.dev",
+  generator: "prakhar",
 };
 
 export default function RootLayout({
